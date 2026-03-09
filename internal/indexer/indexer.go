@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io/fs"
+	"log"
 	"os"
 	"path/filepath"
 	"time"
@@ -152,6 +153,7 @@ type walkContext struct {
 // if the directory should be skipped (gitignore, symlink).
 func (wc *walkContext) handleDir(path, relPath string, d fs.DirEntry) error {
 	if wc.matcher.ShouldIgnore(relPath, true) {
+		log.Printf("[DEBUG] SKIP DIR (gitignore): %s", relPath)
 		return fs.SkipDir
 	}
 	wc.matcher.EnterDirectory(path)
@@ -186,6 +188,7 @@ func (wc *walkContext) handleDir(path, relPath string, d fs.DirEntry) error {
 // files matching gitignore patterns.
 func (wc *walkContext) handleFile(path, relPath string, d fs.DirEntry) error {
 	if wc.matcher.ShouldIgnore(relPath, false) {
+		log.Printf("[DEBUG] SKIP FILE (gitignore): %s", relPath)
 		wc.result.FilesSkipped++
 		return nil
 	}
@@ -196,6 +199,7 @@ func (wc *walkContext) handleFile(path, relPath string, d fs.DirEntry) error {
 		return nil
 	}
 	if isBin {
+		log.Printf("[DEBUG] SKIP FILE (binary): %s", relPath)
 		wc.result.FilesSkipped++
 		return nil
 	}
@@ -507,93 +511,60 @@ func (idx *Indexer) createNodes(ctx context.Context, c *client.Client, folders [
 	return nil
 }
 
-// createEdges batch-creates CONTAINS and BELONGS_TO edges via 6 connect*
-// GraphQL mutations through the repo-scoped client, batched at batchSize.
+// createEdges creates CONTAINS and BELONGS_TO edges via raw Cypher MATCH+CREATE.
+// Uses individual statements instead of UNWIND+MERGE to avoid FalkorDB memory spikes.
 func (idx *Indexer) createEdges(ctx context.Context, c *client.Client, repoName string, folders []pendingFolder, files []pendingFile) error {
 	if len(folders) == 0 && len(files) == 0 {
 		return nil
 	}
 
-	// Classify folders into root/nested/belongsTo edge inputs
-	folderItems := make([]struct{ Path, ParentPath string }, len(folders))
-	for i, f := range folders {
-		folderItems[i] = struct{ Path, ParentPath string }{f.Path, f.ParentPath}
-	}
-	fileItems := make([]struct{ Path, ParentPath string }, len(files))
-	for i, f := range files {
-		fileItems[i] = struct{ Path, ParentPath string }{f.Path, f.ParentPath}
-	}
+	// Build raw Cypher queries for each edge type
+	repoContainsFolder := "MATCH (a:Repository {name: $from_name}) MATCH (b:Folder {path: $to_path}) CREATE (a)-[:CONTAINS]->(b)"
+	repoContainsFile := "MATCH (a:Repository {name: $from_name}) MATCH (b:File {path: $to_path}) CREATE (a)-[:CONTAINS]->(b)"
+	folderContainsFolder := "MATCH (a:Folder {path: $from_path}) MATCH (b:Folder {path: $to_path}) CREATE (a)-[:CONTAINS]->(b)"
+	folderContainsFile := "MATCH (a:Folder {path: $from_path}) MATCH (b:File {path: $to_path}) CREATE (a)-[:CONTAINS]->(b)"
+	folderBelongsToRepo := "MATCH (a:Folder {path: $from_path}) MATCH (b:Repository {name: $to_name}) CREATE (a)-[:BELONGS_TO]->(b)"
+	fileBelongsToRepo := "MATCH (a:File {path: $from_path}) MATCH (b:Repository {name: $to_name}) CREATE (a)-[:BELONGS_TO]->(b)"
 
-	rootFolderInputs, nestedFolderInputs, allFolderBelongsTo := classifyEdgeInputs(repoName, folderItems)
-	rootFileInputs, nestedFileInputs, allFileBelongsTo := classifyEdgeInputs(repoName, fileItems)
-
-	// 1. Repo -> root Folders (CONTAINS)
-	if err := batchConnect(ctx, c, rootFolderInputs, gqlConnectRepositoryFolders); err != nil {
-		return fmt.Errorf("indexer: createEdges repo->folders: %w", err)
-	}
-
-	// 2. Repo -> root Files (CONTAINS)
-	if err := batchConnect(ctx, c, rootFileInputs, gqlConnectRepositoryFiles); err != nil {
-		return fmt.Errorf("indexer: createEdges repo->files: %w", err)
-	}
-
-	// 3. Folder -> child Folders (CONTAINS)
-	if err := batchConnect(ctx, c, nestedFolderInputs, gqlConnectFolderSubfolders); err != nil {
-		return fmt.Errorf("indexer: createEdges folder->folders: %w", err)
-	}
-
-	// 4. Folder -> child Files (CONTAINS)
-	if err := batchConnect(ctx, c, nestedFileInputs, gqlConnectFolderFiles); err != nil {
-		return fmt.Errorf("indexer: createEdges folder->files: %w", err)
-	}
-
-	// 5. All Folders -> Repo BELONGS_TO
-	if err := batchConnect(ctx, c, allFolderBelongsTo, gqlConnectFolderRepository); err != nil {
-		return fmt.Errorf("indexer: createEdges folders->repo: %w", err)
-	}
-
-	// 6. All Files -> Repo BELONGS_TO
-	if err := batchConnect(ctx, c, allFileBelongsTo, gqlConnectFileRepository); err != nil {
-		return fmt.Errorf("indexer: createEdges files->repo: %w", err)
-	}
-
-	return nil
-}
-
-// classifyEdgeInputs separates items into root (parent is repo), nested
-// (parent is another node), and belongsTo (all items → repo) edge inputs.
-func classifyEdgeInputs(repoName string, items []struct{ Path, ParentPath string }) (root, nested, belongsTo []any) {
-	for _, item := range items {
-		if item.ParentPath == "" {
-			root = append(root, map[string]any{
-				"from": map[string]any{"name": repoName},
-				"to":   map[string]any{"path": item.Path},
-			})
-		} else {
-			nested = append(nested, map[string]any{
-				"from": map[string]any{"path": item.ParentPath},
-				"to":   map[string]any{"path": item.Path},
-			})
-		}
-		belongsTo = append(belongsTo, map[string]any{
-			"from": map[string]any{"path": item.Path},
-			"to":   map[string]any{"name": repoName},
-		})
-	}
-	return
-}
-
-// batchConnect executes a connect* GraphQL mutation in batches of batchSize
-// via Client().Execute().
-func batchConnect(ctx context.Context, c *client.Client, items []any, query string) error {
-	for i := 0; i < len(items); i += batchSize {
-		end := i + batchSize
-		if end > len(items) {
-			end = len(items)
-		}
-		if _, err := c.Execute(ctx, query, map[string]any{"input": items[i:end]}); err != nil {
+	for _, f := range folders {
+		if err := ctx.Err(); err != nil {
 			return err
 		}
+		// CONTAINS edge: parent → folder
+		if f.ParentPath == "" {
+			if _, err := c.ExecuteRaw(ctx, repoContainsFolder, map[string]any{"from_name": repoName, "to_path": f.Path}); err != nil {
+				return fmt.Errorf("indexer: createEdges repo->folder: %w", err)
+			}
+		} else {
+			if _, err := c.ExecuteRaw(ctx, folderContainsFolder, map[string]any{"from_path": f.ParentPath, "to_path": f.Path}); err != nil {
+				return fmt.Errorf("indexer: createEdges folder->folder: %w", err)
+			}
+		}
+		// BELONGS_TO edge: folder → repo
+		if _, err := c.ExecuteRaw(ctx, folderBelongsToRepo, map[string]any{"from_path": f.Path, "to_name": repoName}); err != nil {
+			return fmt.Errorf("indexer: createEdges folder->repo: %w", err)
+		}
 	}
+
+	for _, f := range files {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
+		// CONTAINS edge: parent → file
+		if f.ParentPath == "" {
+			if _, err := c.ExecuteRaw(ctx, repoContainsFile, map[string]any{"from_name": repoName, "to_path": f.Path}); err != nil {
+				return fmt.Errorf("indexer: createEdges repo->file: %w", err)
+			}
+		} else {
+			if _, err := c.ExecuteRaw(ctx, folderContainsFile, map[string]any{"from_path": f.ParentPath, "to_path": f.Path}); err != nil {
+				return fmt.Errorf("indexer: createEdges folder->file: %w", err)
+			}
+		}
+		// BELONGS_TO edge: file → repo
+		if _, err := c.ExecuteRaw(ctx, fileBelongsToRepo, map[string]any{"from_path": f.Path, "to_name": repoName}); err != nil {
+			return fmt.Errorf("indexer: createEdges file->repo: %w", err)
+		}
+	}
+
 	return nil
 }

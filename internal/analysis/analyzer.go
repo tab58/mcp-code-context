@@ -21,8 +21,9 @@ const mergeBatchSize = 2
 
 // edgeBatchSize is the number of items per connect mutation call.
 // Even with property indexes, UNWIND + double MATCH + MERGE accumulates
-// intermediate result sets in FalkorDB. Keep batches moderate.
-const edgeBatchSize = 10
+// intermediate result sets in FalkorDB. Keep batches small to avoid OOM
+// in memory-constrained Docker environments with large repositories.
+const edgeBatchSize = 5
 
 // maxSourceLen caps source code stored per symbol. The nomic-embed-text model
 // has a 2048-token context window (~8000 chars), so truncating beyond that
@@ -159,7 +160,7 @@ func (a *Analyzer) Analyze(ctx context.Context, repoID string, repoPath string, 
 			return nil, err
 		}
 
-		if isTestFile(filePath) {
+		if isTestFile(filePath) || isGeneratedFile(filePath) {
 			continue
 		}
 
@@ -434,38 +435,74 @@ func (a *Analyzer) writePass1(ctx context.Context, c *client.Client, repoID stri
 		}
 	}
 
+	log.Printf("[DEBUG] Symbol counts: modules=%d functions=%d classes=%d defFuncEdges=%d defClassEdges=%d methodEdges=%d",
+		len(moduleInputs), len(funcInputs), len(classInputs), len(defFuncEdges), len(defClassEdges), len(methodEdges))
+
 	// Merge nodes (small batches — source code in parameters)
 	if err := batchMutate(ctx, c, moduleInputs, gqlMergeModules, mergeBatchSize); err != nil {
 		return fmt.Errorf("mergeModules: %w", err)
 	}
+	log.Printf("[DEBUG] mergeModules complete")
 	if err := batchMutate(ctx, c, funcInputs, gqlMergeFunctions, mergeBatchSize); err != nil {
 		return fmt.Errorf("mergeFunctions: %w", err)
 	}
+	log.Printf("[DEBUG] mergeFunctions complete")
 	if err := batchMutate(ctx, c, classInputs, gqlMergeClasss, mergeBatchSize); err != nil {
 		return fmt.Errorf("mergeClasss: %w", err)
 	}
+	log.Printf("[DEBUG] mergeClasss complete")
 
-	// DEFINES edges (large batches — small match keys only)
-	if err := batchMutate(ctx, c, defFuncEdges, gqlConnectFileFunctions, edgeBatchSize); err != nil {
+	// DEFINES edges — raw Cypher MATCH+CREATE (avoids UNWIND+MERGE memory spikes)
+	defFuncSpec := edgeSpec{
+		FromLabel: "File", FromWhere: map[string]string{"path": "from_path"},
+		ToLabel: "Function", ToWhere: map[string]string{"name": "to_name", "path": "to_path"},
+		RelType: "DEFINES",
+	}
+	if err := createEdgesRaw(ctx, c, defFuncEdges, defFuncSpec); err != nil {
 		return fmt.Errorf("connectFileFunctions: %w", err)
 	}
-	if err := batchMutate(ctx, c, defClassEdges, gqlConnectFileClasses, edgeBatchSize); err != nil {
+	defClassSpec := edgeSpec{
+		FromLabel: "File", FromWhere: map[string]string{"path": "from_path"},
+		ToLabel: "Class", ToWhere: map[string]string{"name": "to_name", "path": "to_path"},
+		RelType: "DEFINES",
+	}
+	if err := createEdgesRaw(ctx, c, defClassEdges, defClassSpec); err != nil {
 		return fmt.Errorf("connectFileClasses: %w", err)
 	}
 
 	// HAS_METHOD edges
-	if err := batchMutate(ctx, c, methodEdges, gqlConnectClassMethods, edgeBatchSize); err != nil {
+	methodSpec := edgeSpec{
+		FromLabel: "Class", FromWhere: map[string]string{"name": "from_name"},
+		ToLabel: "Function", ToWhere: map[string]string{"name": "to_name", "path": "to_path"},
+		RelType: "HAS_METHOD",
+	}
+	if err := createEdgesRaw(ctx, c, methodEdges, methodSpec); err != nil {
 		return fmt.Errorf("connectClassMethods: %w", err)
 	}
 
 	// BELONGS_TO edges
-	if err := batchMutate(ctx, c, moduleBelongsTo, gqlConnectModuleRepository, edgeBatchSize); err != nil {
+	moduleBelongsToSpec := edgeSpec{
+		FromLabel: "Module", FromWhere: map[string]string{"name": "from_name", "path": "from_path"},
+		ToLabel: "Repository", ToWhere: map[string]string{"name": "to_name"},
+		RelType: "BELONGS_TO",
+	}
+	if err := createEdgesRaw(ctx, c, moduleBelongsTo, moduleBelongsToSpec); err != nil {
 		return fmt.Errorf("connectModuleRepository: %w", err)
 	}
-	if err := batchMutate(ctx, c, funcBelongsTo, gqlConnectFunctionRepository, edgeBatchSize); err != nil {
+	funcBelongsToSpec := edgeSpec{
+		FromLabel: "Function", FromWhere: map[string]string{"name": "from_name", "path": "from_path"},
+		ToLabel: "Repository", ToWhere: map[string]string{"name": "to_name"},
+		RelType: "BELONGS_TO",
+	}
+	if err := createEdgesRaw(ctx, c, funcBelongsTo, funcBelongsToSpec); err != nil {
 		return fmt.Errorf("connectFunctionRepository: %w", err)
 	}
-	if err := batchMutate(ctx, c, classBelongsTo, gqlConnectClassRepository, edgeBatchSize); err != nil {
+	classBelongsToSpec := edgeSpec{
+		FromLabel: "Class", FromWhere: map[string]string{"name": "from_name", "path": "from_path"},
+		ToLabel: "Repository", ToWhere: map[string]string{"name": "to_name"},
+		RelType: "BELONGS_TO",
+	}
+	if err := createEdgesRaw(ctx, c, classBelongsTo, classBelongsToSpec); err != nil {
 		return fmt.Errorf("connectClassRepository: %w", err)
 	}
 
@@ -535,25 +572,62 @@ func (a *Analyzer) writePass2(ctx context.Context, c *client.Client, analyses []
 		}
 	}
 
-	if err := batchMutate(ctx, c, callEdges, gqlConnectFunctionCalls, edgeBatchSize); err != nil {
+	// Raw Cypher MATCH+CREATE for all pass 2 edges (avoids UNWIND+MERGE memory spikes)
+	callSpec := edgeSpec{
+		FromLabel: "Function", FromWhere: map[string]string{"name": "from_name", "path": "from_path"},
+		ToLabel: "Function", ToWhere: map[string]string{"name": "to_name"},
+		RelType: "CALLS",
+		EdgeProps: map[string]string{"callType": "edge_callType"},
+	}
+	if err := createEdgesRaw(ctx, c, callEdges, callSpec); err != nil {
 		return fmt.Errorf("connectFunctionCalls: %w", err)
 	}
-	if err := batchMutate(ctx, c, importEdges, gqlConnectFileImports, edgeBatchSize); err != nil {
+	importSpec := edgeSpec{
+		FromLabel: "File", FromWhere: map[string]string{"path": "from_path"},
+		ToLabel: "Module", ToWhere: map[string]string{"name": "to_name"},
+		RelType: "IMPORTS",
+	}
+	if err := createEdgesRaw(ctx, c, importEdges, importSpec); err != nil {
 		return fmt.Errorf("connectFileImports: %w", err)
 	}
-	if err := batchMutate(ctx, c, inheritsEdges, gqlConnectClassInherits, edgeBatchSize); err != nil {
+	inheritsSpec := edgeSpec{
+		FromLabel: "Class", FromWhere: map[string]string{"name": "from_name", "path": "from_path"},
+		ToLabel: "Class", ToWhere: map[string]string{"name": "to_name"},
+		RelType: "INHERITS",
+	}
+	if err := createEdgesRaw(ctx, c, inheritsEdges, inheritsSpec); err != nil {
 		return fmt.Errorf("connectClassInherits: %w", err)
 	}
-	if err := batchMutate(ctx, c, implementsEdges, gqlConnectClassImplements, edgeBatchSize); err != nil {
+	implementsSpec := edgeSpec{
+		FromLabel: "Class", FromWhere: map[string]string{"name": "from_name", "path": "from_path"},
+		ToLabel: "Class", ToWhere: map[string]string{"name": "to_name"},
+		RelType: "IMPLEMENTS",
+	}
+	if err := createEdgesRaw(ctx, c, implementsEdges, implementsSpec); err != nil {
 		return fmt.Errorf("connectClassImplements: %w", err)
 	}
-	if err := batchMutate(ctx, c, overridesEdges, gqlConnectFunctionOverrides, edgeBatchSize); err != nil {
+	overridesSpec := edgeSpec{
+		FromLabel: "Function", FromWhere: map[string]string{"name": "from_name", "path": "from_path"},
+		ToLabel: "Function", ToWhere: map[string]string{"name": "to_name"},
+		RelType: "OVERRIDES",
+	}
+	if err := createEdgesRaw(ctx, c, overridesEdges, overridesSpec); err != nil {
 		return fmt.Errorf("connectFunctionOverrides: %w", err)
 	}
-	if err := batchMutate(ctx, c, dependsOnEdges, gqlConnectModuleDependsOn, edgeBatchSize); err != nil {
+	dependsOnSpec := edgeSpec{
+		FromLabel: "Module", FromWhere: map[string]string{"name": "from_name", "path": "from_path"},
+		ToLabel: "Module", ToWhere: map[string]string{"name": "to_name"},
+		RelType: "DEPENDS_ON",
+	}
+	if err := createEdgesRaw(ctx, c, dependsOnEdges, dependsOnSpec); err != nil {
 		return fmt.Errorf("connectModuleDependsOn: %w", err)
 	}
-	if err := batchMutate(ctx, c, exportEdges, gqlConnectModuleFunctions, edgeBatchSize); err != nil {
+	exportSpec := edgeSpec{
+		FromLabel: "Module", FromWhere: map[string]string{"name": "from_name", "path": "from_path"},
+		ToLabel: "Function", ToWhere: map[string]string{"name": "to_name"},
+		RelType: "EXPORTS",
+	}
+	if err := createEdgesRaw(ctx, c, exportEdges, exportSpec); err != nil {
 		return fmt.Errorf("connectModuleExports: %w", err)
 	}
 
@@ -606,6 +680,21 @@ func isTestFile(path string) bool {
 	nameWithoutExt := strings.TrimSuffix(base, ext)
 	if strings.HasSuffix(nameWithoutExt, ".test") || strings.HasSuffix(nameWithoutExt, ".spec") {
 		return true
+	}
+	return false
+}
+
+// isGeneratedFile returns true if the file path looks like auto-generated code
+// that should be excluded from the code knowledge graph. Generated code inflates
+// the graph with thousands of boilerplate symbols (e.g., ORM predicates, CRUD methods)
+// that don't help with code understanding.
+func isGeneratedFile(path string) bool {
+	// Check for common generated directory patterns
+	normalized := filepath.ToSlash(path)
+	for _, seg := range strings.Split(normalized, "/") {
+		if seg == "generated" || seg == "gen" {
+			return true
+		}
 	}
 	return false
 }
@@ -675,4 +764,105 @@ func batchMutate(ctx context.Context, c *client.Client, items []map[string]any, 
 		}
 	}
 	return nil
+}
+
+// edgeSpec describes how to create edges between two node types via raw Cypher.
+// Uses individual MATCH+CREATE statements instead of UNWIND+MERGE to avoid
+// FalkorDB memory spikes from intermediate result accumulation.
+type edgeSpec struct {
+	FromLabel string            // e.g. "File"
+	FromWhere map[string]string // field name → param key, e.g. {"path": "from_path"}
+	ToLabel   string            // e.g. "Function"
+	ToWhere   map[string]string // field name → param key
+	RelType   string            // e.g. "DEFINES"
+	EdgeProps map[string]string // optional edge properties, field → param key
+}
+
+// createEdgesRaw creates edges one at a time via raw Cypher MATCH+CREATE.
+// Each item is a map with "from" and "to" sub-maps containing match fields,
+// and optionally an "edge" sub-map for relationship properties.
+func createEdgesRaw(ctx context.Context, c *client.Client, items []map[string]any, spec edgeSpec) error {
+	query := buildEdgeCypher(spec)
+	for _, item := range items {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
+		params := extractEdgeParams(item, spec)
+		if _, err := c.ExecuteRaw(ctx, query, params); err != nil {
+			return fmt.Errorf("create edge %s: %w", spec.RelType, err)
+		}
+	}
+	return nil
+}
+
+// buildEdgeCypher builds a parameterized MATCH+CREATE Cypher query for an edge.
+// Example output:
+//
+//	MATCH (a:File {path: $from_path})
+//	MATCH (b:Function {name: $to_name, path: $to_path})
+//	CREATE (a)-[:DEFINES]->(b)
+func buildEdgeCypher(spec edgeSpec) string {
+	var sb strings.Builder
+	sb.WriteString("MATCH (a:")
+	sb.WriteString(spec.FromLabel)
+	sb.WriteString(" {")
+	writeWhereProps(&sb, spec.FromWhere)
+	sb.WriteString("}) MATCH (b:")
+	sb.WriteString(spec.ToLabel)
+	sb.WriteString(" {")
+	writeWhereProps(&sb, spec.ToWhere)
+	sb.WriteString("}) CREATE (a)-[r:")
+	sb.WriteString(spec.RelType)
+	sb.WriteString("]->(b)")
+	if len(spec.EdgeProps) > 0 {
+		sb.WriteString(" SET ")
+		first := true
+		for field, param := range spec.EdgeProps {
+			if !first {
+				sb.WriteString(", ")
+			}
+			sb.WriteString("r.")
+			sb.WriteString(field)
+			sb.WriteString(" = $")
+			sb.WriteString(param)
+			first = false
+		}
+	}
+	return sb.String()
+}
+
+// writeWhereProps writes Cypher property match expressions like "name: $to_name, path: $to_path".
+func writeWhereProps(sb *strings.Builder, where map[string]string) {
+	first := true
+	for field, param := range where {
+		if !first {
+			sb.WriteString(", ")
+		}
+		sb.WriteString(field)
+		sb.WriteString(": $")
+		sb.WriteString(param)
+		first = false
+	}
+}
+
+// extractEdgeParams converts an edge item map (with "from", "to", "edge" sub-maps)
+// into a flat parameter map for raw Cypher execution.
+func extractEdgeParams(item map[string]any, spec edgeSpec) map[string]any {
+	params := make(map[string]any)
+	if from, ok := item["from"].(map[string]any); ok {
+		for field, param := range spec.FromWhere {
+			params[param] = from[field]
+		}
+	}
+	if to, ok := item["to"].(map[string]any); ok {
+		for field, param := range spec.ToWhere {
+			params[param] = to[field]
+		}
+	}
+	if edge, ok := item["edge"].(map[string]any); ok {
+		for field, param := range spec.EdgeProps {
+			params[param] = edge[field]
+		}
+	}
+	return params
 }

@@ -31,543 +31,695 @@ type CallPropertiesUpdateInput struct {
 	CallType *string `json:"callType,omitempty"`
 }
 
-type Class struct {
-	Id            string        `json:"id"`
-	Name          string        `json:"name"`
-	Path          string        `json:"path"`
-	Language      *string       `json:"language,omitempty"`
-	Kind          string        `json:"kind"`
-	Visibility    *string       `json:"visibility,omitempty"`
-	Source        *string       `json:"source,omitempty"`
-	StartingLine  *int          `json:"startingLine,omitempty"`
-	EndingLine    *int          `json:"endingLine,omitempty"`
-	Decorators    []string      `json:"decorators,omitempty"`
-	Methods       []*Function   `json:"methods,omitempty"`
-	Inherits      []*Class      `json:"inherits,omitempty"`
-	InheritedBy   []*Class      `json:"inheritedBy,omitempty"`
-	Implements    []*Class      `json:"implements,omitempty"`
-	ImplementedBy []*Class      `json:"implementedBy,omitempty"`
-	DefinedIn     []*File       `json:"definedIn,omitempty"`
-	Module        []*Module     `json:"module,omitempty"`
-	Repository    []*Repository `json:"repository,omitempty"`
-}
-
-type ClassCreateInput struct {
-	Name         string   `json:"name"`
-	Path         string   `json:"path"`
-	Language     *string  `json:"language,omitempty"`
-	Kind         string   `json:"kind"`
-	Visibility   *string  `json:"visibility,omitempty"`
-	Source       *string  `json:"source,omitempty"`
-	StartingLine *int     `json:"startingLine,omitempty"`
-	EndingLine   *int     `json:"endingLine,omitempty"`
-	Decorators   []string `json:"decorators,omitempty"`
-}
-
-type ClassUpdateInput struct {
-	Name         *string  `json:"name,omitempty"`
-	Path         *string  `json:"path,omitempty"`
-	Language     *string  `json:"language,omitempty"`
-	Kind         *string  `json:"kind,omitempty"`
-	Visibility   *string  `json:"visibility,omitempty"`
-	Source       *string  `json:"source,omitempty"`
-	StartingLine *int     `json:"startingLine,omitempty"`
-	EndingLine   *int     `json:"endingLine,omitempty"`
-	Decorators   []string `json:"decorators,omitempty"`
-}
-
-type ClassWhere struct {
-	Id                   *string       `json:"id,omitempty"`
-	IdNot                *string       `json:"id_NOT,omitempty"`
-	IdIn                 []string      `json:"id_IN,omitempty"`
-	IdNotIn              []string      `json:"id_NOT_IN,omitempty"`
-	IdContains           *string       `json:"id_CONTAINS,omitempty"`
-	IdStartsWith         *string       `json:"id_STARTS_WITH,omitempty"`
-	IdEndsWith           *string       `json:"id_ENDS_WITH,omitempty"`
-	Name                 *string       `json:"name,omitempty"`
-	NameNot              *string       `json:"name_NOT,omitempty"`
-	NameIn               []string      `json:"name_IN,omitempty"`
-	NameNotIn            []string      `json:"name_NOT_IN,omitempty"`
-	NameGt               *string       `json:"name_GT,omitempty"`
-	NameGte              *string       `json:"name_GTE,omitempty"`
-	NameLt               *string       `json:"name_LT,omitempty"`
-	NameLte              *string       `json:"name_LTE,omitempty"`
-	NameContains         *string       `json:"name_CONTAINS,omitempty"`
-	NameStartsWith       *string       `json:"name_STARTS_WITH,omitempty"`
-	NameEndsWith         *string       `json:"name_ENDS_WITH,omitempty"`
-	Path                 *string       `json:"path,omitempty"`
-	PathNot              *string       `json:"path_NOT,omitempty"`
-	PathIn               []string      `json:"path_IN,omitempty"`
-	PathNotIn            []string      `json:"path_NOT_IN,omitempty"`
-	PathGt               *string       `json:"path_GT,omitempty"`
-	PathGte              *string       `json:"path_GTE,omitempty"`
-	PathLt               *string       `json:"path_LT,omitempty"`
-	PathLte              *string       `json:"path_LTE,omitempty"`
-	PathContains         *string       `json:"path_CONTAINS,omitempty"`
-	PathStartsWith       *string       `json:"path_STARTS_WITH,omitempty"`
-	PathEndsWith         *string       `json:"path_ENDS_WITH,omitempty"`
-	Language             *string       `json:"language,omitempty"`
-	LanguageNot          *string       `json:"language_NOT,omitempty"`
-	LanguageIn           []string      `json:"language_IN,omitempty"`
-	LanguageNotIn        []string      `json:"language_NOT_IN,omitempty"`
-	LanguageGt           *string       `json:"language_GT,omitempty"`
-	LanguageGte          *string       `json:"language_GTE,omitempty"`
-	LanguageLt           *string       `json:"language_LT,omitempty"`
-	LanguageLte          *string       `json:"language_LTE,omitempty"`
-	LanguageContains     *string       `json:"language_CONTAINS,omitempty"`
-	LanguageStartsWith   *string       `json:"language_STARTS_WITH,omitempty"`
-	LanguageEndsWith     *string       `json:"language_ENDS_WITH,omitempty"`
-	Kind                 *string       `json:"kind,omitempty"`
-	KindNot              *string       `json:"kind_NOT,omitempty"`
-	KindIn               []string      `json:"kind_IN,omitempty"`
-	KindNotIn            []string      `json:"kind_NOT_IN,omitempty"`
-	KindGt               *string       `json:"kind_GT,omitempty"`
-	KindGte              *string       `json:"kind_GTE,omitempty"`
-	KindLt               *string       `json:"kind_LT,omitempty"`
-	KindLte              *string       `json:"kind_LTE,omitempty"`
-	KindContains         *string       `json:"kind_CONTAINS,omitempty"`
-	KindStartsWith       *string       `json:"kind_STARTS_WITH,omitempty"`
-	KindEndsWith         *string       `json:"kind_ENDS_WITH,omitempty"`
-	Visibility           *string       `json:"visibility,omitempty"`
-	VisibilityNot        *string       `json:"visibility_NOT,omitempty"`
-	VisibilityIn         []string      `json:"visibility_IN,omitempty"`
-	VisibilityNotIn      []string      `json:"visibility_NOT_IN,omitempty"`
-	VisibilityGt         *string       `json:"visibility_GT,omitempty"`
-	VisibilityGte        *string       `json:"visibility_GTE,omitempty"`
-	VisibilityLt         *string       `json:"visibility_LT,omitempty"`
-	VisibilityLte        *string       `json:"visibility_LTE,omitempty"`
-	VisibilityContains   *string       `json:"visibility_CONTAINS,omitempty"`
-	VisibilityStartsWith *string       `json:"visibility_STARTS_WITH,omitempty"`
-	VisibilityEndsWith   *string       `json:"visibility_ENDS_WITH,omitempty"`
-	Source               *string       `json:"source,omitempty"`
-	SourceNot            *string       `json:"source_NOT,omitempty"`
-	SourceIn             []string      `json:"source_IN,omitempty"`
-	SourceNotIn          []string      `json:"source_NOT_IN,omitempty"`
-	SourceGt             *string       `json:"source_GT,omitempty"`
-	SourceGte            *string       `json:"source_GTE,omitempty"`
-	SourceLt             *string       `json:"source_LT,omitempty"`
-	SourceLte            *string       `json:"source_LTE,omitempty"`
-	SourceContains       *string       `json:"source_CONTAINS,omitempty"`
-	SourceStartsWith     *string       `json:"source_STARTS_WITH,omitempty"`
-	SourceEndsWith       *string       `json:"source_ENDS_WITH,omitempty"`
-	StartingLine         *int          `json:"startingLine,omitempty"`
-	StartingLineNot      *int          `json:"startingLine_NOT,omitempty"`
-	StartingLineIn       []int         `json:"startingLine_IN,omitempty"`
-	StartingLineNotIn    []int         `json:"startingLine_NOT_IN,omitempty"`
-	StartingLineGt       *int          `json:"startingLine_GT,omitempty"`
-	StartingLineGte      *int          `json:"startingLine_GTE,omitempty"`
-	StartingLineLt       *int          `json:"startingLine_LT,omitempty"`
-	StartingLineLte      *int          `json:"startingLine_LTE,omitempty"`
-	EndingLine           *int          `json:"endingLine,omitempty"`
-	EndingLineNot        *int          `json:"endingLine_NOT,omitempty"`
-	EndingLineIn         []int         `json:"endingLine_IN,omitempty"`
-	EndingLineNotIn      []int         `json:"endingLine_NOT_IN,omitempty"`
-	EndingLineGt         *int          `json:"endingLine_GT,omitempty"`
-	EndingLineGte        *int          `json:"endingLine_GTE,omitempty"`
-	EndingLineLt         *int          `json:"endingLine_LT,omitempty"`
-	EndingLineLte        *int          `json:"endingLine_LTE,omitempty"`
-	Decorators           *[]string     `json:"decorators,omitempty"`
-	DecoratorsNot        *[]string     `json:"decorators_NOT,omitempty"`
-	DecoratorsIn         [][]string    `json:"decorators_IN,omitempty"`
-	DecoratorsNotIn      [][]string    `json:"decorators_NOT_IN,omitempty"`
-	DecoratorsGt         *[]string     `json:"decorators_GT,omitempty"`
-	DecoratorsGte        *[]string     `json:"decorators_GTE,omitempty"`
-	DecoratorsLt         *[]string     `json:"decorators_LT,omitempty"`
-	DecoratorsLte        *[]string     `json:"decorators_LTE,omitempty"`
-	AND                  []*ClassWhere `json:"AND,omitempty"`
-	OR                   []*ClassWhere `json:"OR,omitempty"`
-	NOT                  *ClassWhere   `json:"NOT,omitempty"`
-}
-
-type ClassSort struct {
-	Id           *SortDirection `json:"id,omitempty"`
-	Name         *SortDirection `json:"name,omitempty"`
-	Path         *SortDirection `json:"path,omitempty"`
-	Language     *SortDirection `json:"language,omitempty"`
-	Kind         *SortDirection `json:"kind,omitempty"`
-	Visibility   *SortDirection `json:"visibility,omitempty"`
-	Source       *SortDirection `json:"source,omitempty"`
-	StartingLine *SortDirection `json:"startingLine,omitempty"`
-	EndingLine   *SortDirection `json:"endingLine,omitempty"`
-	Decorators   *SortDirection `json:"decorators,omitempty"`
-}
-
-type ClasssConnection struct {
-	Edges      []*ClassEdge `json:"edges"`
-	TotalCount int          `json:"totalCount"`
-	PageInfo   PageInfo     `json:"pageInfo"`
-}
-
-type ClassEdge struct {
-	Node   *Class `json:"node"`
-	Cursor string `json:"cursor"`
-}
-
-type CreateClasssMutationResponse struct {
-	Classs []*Class `json:"classs"`
-}
-
-type UpdateClasssMutationResponse struct {
-	Classs []*Class `json:"classs"`
-}
-
-type ClassMethodsConnection struct {
-	Edges      []*ClassMethodsEdge `json:"edges"`
-	TotalCount int                 `json:"totalCount"`
-	PageInfo   PageInfo            `json:"pageInfo"`
-}
-
-type ClassMethodsEdge struct {
-	Node   *Function `json:"node"`
-	Cursor string    `json:"cursor"`
-}
-
-type ClassMethodsFieldInput struct {
-	Create  []*ClassMethodsCreateFieldInput  `json:"create,omitempty"`
-	Connect []*ClassMethodsConnectFieldInput `json:"connect,omitempty"`
-}
-
-type ClassMethodsUpdateFieldInput struct {
-	Create     []*ClassMethodsCreateFieldInput      `json:"create,omitempty"`
-	Connect    []*ClassMethodsConnectFieldInput     `json:"connect,omitempty"`
-	Disconnect []*ClassMethodsDisconnectFieldInput  `json:"disconnect,omitempty"`
-	Update     []*ClassMethodsUpdateConnectionInput `json:"update,omitempty"`
-	Delete     []*ClassMethodsDeleteFieldInput      `json:"delete,omitempty"`
-}
-
-type ClassMethodsCreateFieldInput struct {
-	Node FunctionCreateInput `json:"node"`
-}
-
-type ClassMethodsConnectFieldInput struct {
-	Where FunctionWhere `json:"where"`
-}
-
-type ClassMethodsDisconnectFieldInput struct {
-	Where FunctionWhere `json:"where"`
-}
-
-type ClassMethodsUpdateConnectionInput struct {
-	Where FunctionWhere        `json:"where"`
-	Node  *FunctionUpdateInput `json:"node,omitempty"`
-}
-
-type ClassMethodsDeleteFieldInput struct {
-	Where FunctionWhere `json:"where"`
-}
-
-type ClassInheritsConnection struct {
-	Edges      []*ClassInheritsEdge `json:"edges"`
-	TotalCount int                  `json:"totalCount"`
-	PageInfo   PageInfo             `json:"pageInfo"`
-}
-
-type ClassInheritsEdge struct {
-	Node   *Class `json:"node"`
-	Cursor string `json:"cursor"`
-}
-
-type ClassInheritsFieldInput struct {
-	Create  []*ClassInheritsCreateFieldInput  `json:"create,omitempty"`
-	Connect []*ClassInheritsConnectFieldInput `json:"connect,omitempty"`
-}
-
-type ClassInheritsUpdateFieldInput struct {
-	Create     []*ClassInheritsCreateFieldInput      `json:"create,omitempty"`
-	Connect    []*ClassInheritsConnectFieldInput     `json:"connect,omitempty"`
-	Disconnect []*ClassInheritsDisconnectFieldInput  `json:"disconnect,omitempty"`
-	Update     []*ClassInheritsUpdateConnectionInput `json:"update,omitempty"`
-	Delete     []*ClassInheritsDeleteFieldInput      `json:"delete,omitempty"`
-}
-
-type ClassInheritsCreateFieldInput struct {
-	Node ClassCreateInput `json:"node"`
-}
-
-type ClassInheritsConnectFieldInput struct {
-	Where ClassWhere `json:"where"`
-}
-
-type ClassInheritsDisconnectFieldInput struct {
-	Where ClassWhere `json:"where"`
-}
-
-type ClassInheritsUpdateConnectionInput struct {
-	Where ClassWhere        `json:"where"`
-	Node  *ClassUpdateInput `json:"node,omitempty"`
-}
-
-type ClassInheritsDeleteFieldInput struct {
-	Where ClassWhere `json:"where"`
-}
-
-type ClassInheritedByConnection struct {
-	Edges      []*ClassInheritedByEdge `json:"edges"`
-	TotalCount int                     `json:"totalCount"`
-	PageInfo   PageInfo                `json:"pageInfo"`
-}
-
-type ClassInheritedByEdge struct {
-	Node   *Class `json:"node"`
-	Cursor string `json:"cursor"`
-}
-
-type ClassInheritedByFieldInput struct {
-	Create  []*ClassInheritedByCreateFieldInput  `json:"create,omitempty"`
-	Connect []*ClassInheritedByConnectFieldInput `json:"connect,omitempty"`
-}
-
-type ClassInheritedByUpdateFieldInput struct {
-	Create     []*ClassInheritedByCreateFieldInput      `json:"create,omitempty"`
-	Connect    []*ClassInheritedByConnectFieldInput     `json:"connect,omitempty"`
-	Disconnect []*ClassInheritedByDisconnectFieldInput  `json:"disconnect,omitempty"`
-	Update     []*ClassInheritedByUpdateConnectionInput `json:"update,omitempty"`
-	Delete     []*ClassInheritedByDeleteFieldInput      `json:"delete,omitempty"`
-}
-
-type ClassInheritedByCreateFieldInput struct {
-	Node ClassCreateInput `json:"node"`
-}
-
-type ClassInheritedByConnectFieldInput struct {
-	Where ClassWhere `json:"where"`
-}
-
-type ClassInheritedByDisconnectFieldInput struct {
-	Where ClassWhere `json:"where"`
-}
-
-type ClassInheritedByUpdateConnectionInput struct {
-	Where ClassWhere        `json:"where"`
-	Node  *ClassUpdateInput `json:"node,omitempty"`
-}
-
-type ClassInheritedByDeleteFieldInput struct {
-	Where ClassWhere `json:"where"`
-}
-
-type ClassImplementsConnection struct {
-	Edges      []*ClassImplementsEdge `json:"edges"`
-	TotalCount int                    `json:"totalCount"`
-	PageInfo   PageInfo               `json:"pageInfo"`
-}
-
-type ClassImplementsEdge struct {
-	Node   *Class `json:"node"`
-	Cursor string `json:"cursor"`
-}
-
-type ClassImplementsFieldInput struct {
-	Create  []*ClassImplementsCreateFieldInput  `json:"create,omitempty"`
-	Connect []*ClassImplementsConnectFieldInput `json:"connect,omitempty"`
-}
-
-type ClassImplementsUpdateFieldInput struct {
-	Create     []*ClassImplementsCreateFieldInput      `json:"create,omitempty"`
-	Connect    []*ClassImplementsConnectFieldInput     `json:"connect,omitempty"`
-	Disconnect []*ClassImplementsDisconnectFieldInput  `json:"disconnect,omitempty"`
-	Update     []*ClassImplementsUpdateConnectionInput `json:"update,omitempty"`
-	Delete     []*ClassImplementsDeleteFieldInput      `json:"delete,omitempty"`
-}
-
-type ClassImplementsCreateFieldInput struct {
-	Node ClassCreateInput `json:"node"`
-}
-
-type ClassImplementsConnectFieldInput struct {
-	Where ClassWhere `json:"where"`
-}
-
-type ClassImplementsDisconnectFieldInput struct {
-	Where ClassWhere `json:"where"`
-}
-
-type ClassImplementsUpdateConnectionInput struct {
-	Where ClassWhere        `json:"where"`
-	Node  *ClassUpdateInput `json:"node,omitempty"`
-}
-
-type ClassImplementsDeleteFieldInput struct {
-	Where ClassWhere `json:"where"`
-}
-
-type ClassImplementedByConnection struct {
-	Edges      []*ClassImplementedByEdge `json:"edges"`
-	TotalCount int                       `json:"totalCount"`
-	PageInfo   PageInfo                  `json:"pageInfo"`
-}
-
-type ClassImplementedByEdge struct {
-	Node   *Class `json:"node"`
-	Cursor string `json:"cursor"`
-}
-
-type ClassImplementedByFieldInput struct {
-	Create  []*ClassImplementedByCreateFieldInput  `json:"create,omitempty"`
-	Connect []*ClassImplementedByConnectFieldInput `json:"connect,omitempty"`
-}
-
-type ClassImplementedByUpdateFieldInput struct {
-	Create     []*ClassImplementedByCreateFieldInput      `json:"create,omitempty"`
-	Connect    []*ClassImplementedByConnectFieldInput     `json:"connect,omitempty"`
-	Disconnect []*ClassImplementedByDisconnectFieldInput  `json:"disconnect,omitempty"`
-	Update     []*ClassImplementedByUpdateConnectionInput `json:"update,omitempty"`
-	Delete     []*ClassImplementedByDeleteFieldInput      `json:"delete,omitempty"`
-}
-
-type ClassImplementedByCreateFieldInput struct {
-	Node ClassCreateInput `json:"node"`
-}
-
-type ClassImplementedByConnectFieldInput struct {
-	Where ClassWhere `json:"where"`
-}
-
-type ClassImplementedByDisconnectFieldInput struct {
-	Where ClassWhere `json:"where"`
-}
-
-type ClassImplementedByUpdateConnectionInput struct {
-	Where ClassWhere        `json:"where"`
-	Node  *ClassUpdateInput `json:"node,omitempty"`
-}
-
-type ClassImplementedByDeleteFieldInput struct {
-	Where ClassWhere `json:"where"`
-}
-
-type ClassDefinedInConnection struct {
-	Edges      []*ClassDefinedInEdge `json:"edges"`
-	TotalCount int                   `json:"totalCount"`
-	PageInfo   PageInfo              `json:"pageInfo"`
-}
-
-type ClassDefinedInEdge struct {
-	Node   *File  `json:"node"`
-	Cursor string `json:"cursor"`
-}
-
-type ClassDefinedInFieldInput struct {
-	Create  []*ClassDefinedInCreateFieldInput  `json:"create,omitempty"`
-	Connect []*ClassDefinedInConnectFieldInput `json:"connect,omitempty"`
-}
-
-type ClassDefinedInUpdateFieldInput struct {
-	Create     []*ClassDefinedInCreateFieldInput      `json:"create,omitempty"`
-	Connect    []*ClassDefinedInConnectFieldInput     `json:"connect,omitempty"`
-	Disconnect []*ClassDefinedInDisconnectFieldInput  `json:"disconnect,omitempty"`
-	Update     []*ClassDefinedInUpdateConnectionInput `json:"update,omitempty"`
-	Delete     []*ClassDefinedInDeleteFieldInput      `json:"delete,omitempty"`
-}
-
-type ClassDefinedInCreateFieldInput struct {
-	Node FileCreateInput `json:"node"`
-}
-
-type ClassDefinedInConnectFieldInput struct {
-	Where FileWhere `json:"where"`
-}
-
-type ClassDefinedInDisconnectFieldInput struct {
-	Where FileWhere `json:"where"`
-}
-
-type ClassDefinedInUpdateConnectionInput struct {
-	Where FileWhere        `json:"where"`
-	Node  *FileUpdateInput `json:"node,omitempty"`
-}
-
-type ClassDefinedInDeleteFieldInput struct {
-	Where FileWhere `json:"where"`
-}
-
-type ClassModuleConnection struct {
-	Edges      []*ClassModuleEdge `json:"edges"`
-	TotalCount int                `json:"totalCount"`
-	PageInfo   PageInfo           `json:"pageInfo"`
-}
-
-type ClassModuleEdge struct {
-	Node   *Module `json:"node"`
-	Cursor string  `json:"cursor"`
-}
-
-type ClassModuleFieldInput struct {
-	Create  []*ClassModuleCreateFieldInput  `json:"create,omitempty"`
-	Connect []*ClassModuleConnectFieldInput `json:"connect,omitempty"`
-}
-
-type ClassModuleUpdateFieldInput struct {
-	Create     []*ClassModuleCreateFieldInput      `json:"create,omitempty"`
-	Connect    []*ClassModuleConnectFieldInput     `json:"connect,omitempty"`
-	Disconnect []*ClassModuleDisconnectFieldInput  `json:"disconnect,omitempty"`
-	Update     []*ClassModuleUpdateConnectionInput `json:"update,omitempty"`
-	Delete     []*ClassModuleDeleteFieldInput      `json:"delete,omitempty"`
-}
-
-type ClassModuleCreateFieldInput struct {
-	Node ModuleCreateInput `json:"node"`
-}
-
-type ClassModuleConnectFieldInput struct {
-	Where ModuleWhere `json:"where"`
-}
-
-type ClassModuleDisconnectFieldInput struct {
-	Where ModuleWhere `json:"where"`
-}
-
-type ClassModuleUpdateConnectionInput struct {
-	Where ModuleWhere        `json:"where"`
-	Node  *ModuleUpdateInput `json:"node,omitempty"`
-}
-
-type ClassModuleDeleteFieldInput struct {
-	Where ModuleWhere `json:"where"`
-}
+type Repository struct {
+	Id              string    `json:"id"`
+	Name            string    `json:"name"`
+	Path            *string   `json:"path,omitempty"`
+	RemoteUrl       *string   `json:"remoteUrl,omitempty"`
+	PrimaryLanguage *string   `json:"primaryLanguage,omitempty"`
+	LastIndexed     DateTime  `json:"lastIndexed"`
+	Folders         []*Folder `json:"folders,omitempty"`
+	Files           []*File   `json:"files,omitempty"`
+	Modules         []*Module `json:"modules,omitempty"`
+}
+
+type RepositoryCreateInput struct {
+	Name            string   `json:"name"`
+	Path            *string  `json:"path,omitempty"`
+	RemoteUrl       *string  `json:"remoteUrl,omitempty"`
+	PrimaryLanguage *string  `json:"primaryLanguage,omitempty"`
+	LastIndexed     DateTime `json:"lastIndexed"`
+}
+
+type RepositoryUpdateInput struct {
+	Name            *string   `json:"name,omitempty"`
+	Path            *string   `json:"path,omitempty"`
+	RemoteUrl       *string   `json:"remoteUrl,omitempty"`
+	PrimaryLanguage *string   `json:"primaryLanguage,omitempty"`
+	LastIndexed     *DateTime `json:"lastIndexed,omitempty"`
+}
+
+type RepositoryWhere struct {
+	Id                        *string            `json:"id,omitempty"`
+	IdNot                     *string            `json:"id_NOT,omitempty"`
+	IdIn                      []string           `json:"id_IN,omitempty"`
+	IdNotIn                   []string           `json:"id_NOT_IN,omitempty"`
+	IdContains                *string            `json:"id_CONTAINS,omitempty"`
+	IdStartsWith              *string            `json:"id_STARTS_WITH,omitempty"`
+	IdEndsWith                *string            `json:"id_ENDS_WITH,omitempty"`
+	Name                      *string            `json:"name,omitempty"`
+	NameNot                   *string            `json:"name_NOT,omitempty"`
+	NameIn                    []string           `json:"name_IN,omitempty"`
+	NameNotIn                 []string           `json:"name_NOT_IN,omitempty"`
+	NameGt                    *string            `json:"name_GT,omitempty"`
+	NameGte                   *string            `json:"name_GTE,omitempty"`
+	NameLt                    *string            `json:"name_LT,omitempty"`
+	NameLte                   *string            `json:"name_LTE,omitempty"`
+	NameContains              *string            `json:"name_CONTAINS,omitempty"`
+	NameStartsWith            *string            `json:"name_STARTS_WITH,omitempty"`
+	NameEndsWith              *string            `json:"name_ENDS_WITH,omitempty"`
+	Path                      *string            `json:"path,omitempty"`
+	PathNot                   *string            `json:"path_NOT,omitempty"`
+	PathIn                    []string           `json:"path_IN,omitempty"`
+	PathNotIn                 []string           `json:"path_NOT_IN,omitempty"`
+	PathGt                    *string            `json:"path_GT,omitempty"`
+	PathGte                   *string            `json:"path_GTE,omitempty"`
+	PathLt                    *string            `json:"path_LT,omitempty"`
+	PathLte                   *string            `json:"path_LTE,omitempty"`
+	PathContains              *string            `json:"path_CONTAINS,omitempty"`
+	PathStartsWith            *string            `json:"path_STARTS_WITH,omitempty"`
+	PathEndsWith              *string            `json:"path_ENDS_WITH,omitempty"`
+	RemoteUrl                 *string            `json:"remoteUrl,omitempty"`
+	RemoteUrlNot              *string            `json:"remoteUrl_NOT,omitempty"`
+	RemoteUrlIn               []string           `json:"remoteUrl_IN,omitempty"`
+	RemoteUrlNotIn            []string           `json:"remoteUrl_NOT_IN,omitempty"`
+	RemoteUrlGt               *string            `json:"remoteUrl_GT,omitempty"`
+	RemoteUrlGte              *string            `json:"remoteUrl_GTE,omitempty"`
+	RemoteUrlLt               *string            `json:"remoteUrl_LT,omitempty"`
+	RemoteUrlLte              *string            `json:"remoteUrl_LTE,omitempty"`
+	RemoteUrlContains         *string            `json:"remoteUrl_CONTAINS,omitempty"`
+	RemoteUrlStartsWith       *string            `json:"remoteUrl_STARTS_WITH,omitempty"`
+	RemoteUrlEndsWith         *string            `json:"remoteUrl_ENDS_WITH,omitempty"`
+	PrimaryLanguage           *string            `json:"primaryLanguage,omitempty"`
+	PrimaryLanguageNot        *string            `json:"primaryLanguage_NOT,omitempty"`
+	PrimaryLanguageIn         []string           `json:"primaryLanguage_IN,omitempty"`
+	PrimaryLanguageNotIn      []string           `json:"primaryLanguage_NOT_IN,omitempty"`
+	PrimaryLanguageGt         *string            `json:"primaryLanguage_GT,omitempty"`
+	PrimaryLanguageGte        *string            `json:"primaryLanguage_GTE,omitempty"`
+	PrimaryLanguageLt         *string            `json:"primaryLanguage_LT,omitempty"`
+	PrimaryLanguageLte        *string            `json:"primaryLanguage_LTE,omitempty"`
+	PrimaryLanguageContains   *string            `json:"primaryLanguage_CONTAINS,omitempty"`
+	PrimaryLanguageStartsWith *string            `json:"primaryLanguage_STARTS_WITH,omitempty"`
+	PrimaryLanguageEndsWith   *string            `json:"primaryLanguage_ENDS_WITH,omitempty"`
+	LastIndexed               *DateTime          `json:"lastIndexed,omitempty"`
+	LastIndexedNot            *DateTime          `json:"lastIndexed_NOT,omitempty"`
+	LastIndexedIn             []DateTime         `json:"lastIndexed_IN,omitempty"`
+	LastIndexedNotIn          []DateTime         `json:"lastIndexed_NOT_IN,omitempty"`
+	LastIndexedGt             *DateTime          `json:"lastIndexed_GT,omitempty"`
+	LastIndexedGte            *DateTime          `json:"lastIndexed_GTE,omitempty"`
+	LastIndexedLt             *DateTime          `json:"lastIndexed_LT,omitempty"`
+	LastIndexedLte            *DateTime          `json:"lastIndexed_LTE,omitempty"`
+	AND                       []*RepositoryWhere `json:"AND,omitempty"`
+	OR                        []*RepositoryWhere `json:"OR,omitempty"`
+	NOT                       *RepositoryWhere   `json:"NOT,omitempty"`
+}
+
+type RepositorySort struct {
+	Id              *SortDirection `json:"id,omitempty"`
+	Name            *SortDirection `json:"name,omitempty"`
+	Path            *SortDirection `json:"path,omitempty"`
+	RemoteUrl       *SortDirection `json:"remoteUrl,omitempty"`
+	PrimaryLanguage *SortDirection `json:"primaryLanguage,omitempty"`
+	LastIndexed     *SortDirection `json:"lastIndexed,omitempty"`
+}
 
-type ClassRepositoryConnection struct {
-	Edges      []*ClassRepositoryEdge `json:"edges"`
-	TotalCount int                    `json:"totalCount"`
-	PageInfo   PageInfo               `json:"pageInfo"`
+type RepositorysConnection struct {
+	Edges      []*RepositoryEdge `json:"edges"`
+	TotalCount int               `json:"totalCount"`
+	PageInfo   PageInfo          `json:"pageInfo"`
 }
 
-type ClassRepositoryEdge struct {
+type RepositoryEdge struct {
 	Node   *Repository `json:"node"`
 	Cursor string      `json:"cursor"`
 }
 
-type ClassRepositoryFieldInput struct {
-	Create  []*ClassRepositoryCreateFieldInput  `json:"create,omitempty"`
-	Connect []*ClassRepositoryConnectFieldInput `json:"connect,omitempty"`
+type CreateRepositorysMutationResponse struct {
+	Repositorys []*Repository `json:"repositorys"`
 }
 
-type ClassRepositoryUpdateFieldInput struct {
-	Create     []*ClassRepositoryCreateFieldInput      `json:"create,omitempty"`
-	Connect    []*ClassRepositoryConnectFieldInput     `json:"connect,omitempty"`
-	Disconnect []*ClassRepositoryDisconnectFieldInput  `json:"disconnect,omitempty"`
-	Update     []*ClassRepositoryUpdateConnectionInput `json:"update,omitempty"`
-	Delete     []*ClassRepositoryDeleteFieldInput      `json:"delete,omitempty"`
+type UpdateRepositorysMutationResponse struct {
+	Repositorys []*Repository `json:"repositorys"`
 }
 
-type ClassRepositoryCreateFieldInput struct {
+type RepositoryFoldersConnection struct {
+	Edges      []*RepositoryFoldersEdge `json:"edges"`
+	TotalCount int                      `json:"totalCount"`
+	PageInfo   PageInfo                 `json:"pageInfo"`
+}
+
+type RepositoryFoldersEdge struct {
+	Node   *Folder `json:"node"`
+	Cursor string  `json:"cursor"`
+}
+
+type RepositoryFoldersFieldInput struct {
+	Create  []*RepositoryFoldersCreateFieldInput  `json:"create,omitempty"`
+	Connect []*RepositoryFoldersConnectFieldInput `json:"connect,omitempty"`
+}
+
+type RepositoryFoldersUpdateFieldInput struct {
+	Create     []*RepositoryFoldersCreateFieldInput      `json:"create,omitempty"`
+	Connect    []*RepositoryFoldersConnectFieldInput     `json:"connect,omitempty"`
+	Disconnect []*RepositoryFoldersDisconnectFieldInput  `json:"disconnect,omitempty"`
+	Update     []*RepositoryFoldersUpdateConnectionInput `json:"update,omitempty"`
+	Delete     []*RepositoryFoldersDeleteFieldInput      `json:"delete,omitempty"`
+}
+
+type RepositoryFoldersCreateFieldInput struct {
+	Node FolderCreateInput `json:"node"`
+}
+
+type RepositoryFoldersConnectFieldInput struct {
+	Where FolderWhere `json:"where"`
+}
+
+type RepositoryFoldersDisconnectFieldInput struct {
+	Where FolderWhere `json:"where"`
+}
+
+type RepositoryFoldersUpdateConnectionInput struct {
+	Where FolderWhere        `json:"where"`
+	Node  *FolderUpdateInput `json:"node,omitempty"`
+}
+
+type RepositoryFoldersDeleteFieldInput struct {
+	Where FolderWhere `json:"where"`
+}
+
+type RepositoryFilesConnection struct {
+	Edges      []*RepositoryFilesEdge `json:"edges"`
+	TotalCount int                    `json:"totalCount"`
+	PageInfo   PageInfo               `json:"pageInfo"`
+}
+
+type RepositoryFilesEdge struct {
+	Node   *File  `json:"node"`
+	Cursor string `json:"cursor"`
+}
+
+type RepositoryFilesFieldInput struct {
+	Create  []*RepositoryFilesCreateFieldInput  `json:"create,omitempty"`
+	Connect []*RepositoryFilesConnectFieldInput `json:"connect,omitempty"`
+}
+
+type RepositoryFilesUpdateFieldInput struct {
+	Create     []*RepositoryFilesCreateFieldInput      `json:"create,omitempty"`
+	Connect    []*RepositoryFilesConnectFieldInput     `json:"connect,omitempty"`
+	Disconnect []*RepositoryFilesDisconnectFieldInput  `json:"disconnect,omitempty"`
+	Update     []*RepositoryFilesUpdateConnectionInput `json:"update,omitempty"`
+	Delete     []*RepositoryFilesDeleteFieldInput      `json:"delete,omitempty"`
+}
+
+type RepositoryFilesCreateFieldInput struct {
+	Node FileCreateInput `json:"node"`
+}
+
+type RepositoryFilesConnectFieldInput struct {
+	Where FileWhere `json:"where"`
+}
+
+type RepositoryFilesDisconnectFieldInput struct {
+	Where FileWhere `json:"where"`
+}
+
+type RepositoryFilesUpdateConnectionInput struct {
+	Where FileWhere        `json:"where"`
+	Node  *FileUpdateInput `json:"node,omitempty"`
+}
+
+type RepositoryFilesDeleteFieldInput struct {
+	Where FileWhere `json:"where"`
+}
+
+type RepositoryModulesConnection struct {
+	Edges      []*RepositoryModulesEdge `json:"edges"`
+	TotalCount int                      `json:"totalCount"`
+	PageInfo   PageInfo                 `json:"pageInfo"`
+}
+
+type RepositoryModulesEdge struct {
+	Node   *Module `json:"node"`
+	Cursor string  `json:"cursor"`
+}
+
+type RepositoryModulesFieldInput struct {
+	Create  []*RepositoryModulesCreateFieldInput  `json:"create,omitempty"`
+	Connect []*RepositoryModulesConnectFieldInput `json:"connect,omitempty"`
+}
+
+type RepositoryModulesUpdateFieldInput struct {
+	Create     []*RepositoryModulesCreateFieldInput      `json:"create,omitempty"`
+	Connect    []*RepositoryModulesConnectFieldInput     `json:"connect,omitempty"`
+	Disconnect []*RepositoryModulesDisconnectFieldInput  `json:"disconnect,omitempty"`
+	Update     []*RepositoryModulesUpdateConnectionInput `json:"update,omitempty"`
+	Delete     []*RepositoryModulesDeleteFieldInput      `json:"delete,omitempty"`
+}
+
+type RepositoryModulesCreateFieldInput struct {
+	Node ModuleCreateInput `json:"node"`
+}
+
+type RepositoryModulesConnectFieldInput struct {
+	Where ModuleWhere `json:"where"`
+}
+
+type RepositoryModulesDisconnectFieldInput struct {
+	Where ModuleWhere `json:"where"`
+}
+
+type RepositoryModulesUpdateConnectionInput struct {
+	Where ModuleWhere        `json:"where"`
+	Node  *ModuleUpdateInput `json:"node,omitempty"`
+}
+
+type RepositoryModulesDeleteFieldInput struct {
+	Where ModuleWhere `json:"where"`
+}
+
+type Module struct {
+	Id           string        `json:"id"`
+	Name         string        `json:"name"`
+	Path         string        `json:"path"`
+	Language     *string       `json:"language,omitempty"`
+	ImportPath   *string       `json:"importPath,omitempty"`
+	Visibility   *string       `json:"visibility,omitempty"`
+	Kind         *string       `json:"kind,omitempty"`
+	StartingLine *int          `json:"startingLine,omitempty"`
+	EndingLine   *int          `json:"endingLine,omitempty"`
+	Functions    []*Function   `json:"functions,omitempty"`
+	Classes      []*Class      `json:"classes,omitempty"`
+	DependsOn    []*Module     `json:"dependsOn,omitempty"`
+	DependedOnBy []*Module     `json:"dependedOnBy,omitempty"`
+	ImportedBy   []*File       `json:"importedBy,omitempty"`
+	Repository   []*Repository `json:"repository,omitempty"`
+}
+
+type ModuleCreateInput struct {
+	Name         string  `json:"name"`
+	Path         string  `json:"path"`
+	Language     *string `json:"language,omitempty"`
+	ImportPath   *string `json:"importPath,omitempty"`
+	Visibility   *string `json:"visibility,omitempty"`
+	Kind         *string `json:"kind,omitempty"`
+	StartingLine *int    `json:"startingLine,omitempty"`
+	EndingLine   *int    `json:"endingLine,omitempty"`
+}
+
+type ModuleUpdateInput struct {
+	Name         *string `json:"name,omitempty"`
+	Path         *string `json:"path,omitempty"`
+	Language     *string `json:"language,omitempty"`
+	ImportPath   *string `json:"importPath,omitempty"`
+	Visibility   *string `json:"visibility,omitempty"`
+	Kind         *string `json:"kind,omitempty"`
+	StartingLine *int    `json:"startingLine,omitempty"`
+	EndingLine   *int    `json:"endingLine,omitempty"`
+}
+
+type ModuleWhere struct {
+	Id                   *string        `json:"id,omitempty"`
+	IdNot                *string        `json:"id_NOT,omitempty"`
+	IdIn                 []string       `json:"id_IN,omitempty"`
+	IdNotIn              []string       `json:"id_NOT_IN,omitempty"`
+	IdContains           *string        `json:"id_CONTAINS,omitempty"`
+	IdStartsWith         *string        `json:"id_STARTS_WITH,omitempty"`
+	IdEndsWith           *string        `json:"id_ENDS_WITH,omitempty"`
+	Name                 *string        `json:"name,omitempty"`
+	NameNot              *string        `json:"name_NOT,omitempty"`
+	NameIn               []string       `json:"name_IN,omitempty"`
+	NameNotIn            []string       `json:"name_NOT_IN,omitempty"`
+	NameGt               *string        `json:"name_GT,omitempty"`
+	NameGte              *string        `json:"name_GTE,omitempty"`
+	NameLt               *string        `json:"name_LT,omitempty"`
+	NameLte              *string        `json:"name_LTE,omitempty"`
+	NameContains         *string        `json:"name_CONTAINS,omitempty"`
+	NameStartsWith       *string        `json:"name_STARTS_WITH,omitempty"`
+	NameEndsWith         *string        `json:"name_ENDS_WITH,omitempty"`
+	Path                 *string        `json:"path,omitempty"`
+	PathNot              *string        `json:"path_NOT,omitempty"`
+	PathIn               []string       `json:"path_IN,omitempty"`
+	PathNotIn            []string       `json:"path_NOT_IN,omitempty"`
+	PathGt               *string        `json:"path_GT,omitempty"`
+	PathGte              *string        `json:"path_GTE,omitempty"`
+	PathLt               *string        `json:"path_LT,omitempty"`
+	PathLte              *string        `json:"path_LTE,omitempty"`
+	PathContains         *string        `json:"path_CONTAINS,omitempty"`
+	PathStartsWith       *string        `json:"path_STARTS_WITH,omitempty"`
+	PathEndsWith         *string        `json:"path_ENDS_WITH,omitempty"`
+	Language             *string        `json:"language,omitempty"`
+	LanguageNot          *string        `json:"language_NOT,omitempty"`
+	LanguageIn           []string       `json:"language_IN,omitempty"`
+	LanguageNotIn        []string       `json:"language_NOT_IN,omitempty"`
+	LanguageGt           *string        `json:"language_GT,omitempty"`
+	LanguageGte          *string        `json:"language_GTE,omitempty"`
+	LanguageLt           *string        `json:"language_LT,omitempty"`
+	LanguageLte          *string        `json:"language_LTE,omitempty"`
+	LanguageContains     *string        `json:"language_CONTAINS,omitempty"`
+	LanguageStartsWith   *string        `json:"language_STARTS_WITH,omitempty"`
+	LanguageEndsWith     *string        `json:"language_ENDS_WITH,omitempty"`
+	ImportPath           *string        `json:"importPath,omitempty"`
+	ImportPathNot        *string        `json:"importPath_NOT,omitempty"`
+	ImportPathIn         []string       `json:"importPath_IN,omitempty"`
+	ImportPathNotIn      []string       `json:"importPath_NOT_IN,omitempty"`
+	ImportPathGt         *string        `json:"importPath_GT,omitempty"`
+	ImportPathGte        *string        `json:"importPath_GTE,omitempty"`
+	ImportPathLt         *string        `json:"importPath_LT,omitempty"`
+	ImportPathLte        *string        `json:"importPath_LTE,omitempty"`
+	ImportPathContains   *string        `json:"importPath_CONTAINS,omitempty"`
+	ImportPathStartsWith *string        `json:"importPath_STARTS_WITH,omitempty"`
+	ImportPathEndsWith   *string        `json:"importPath_ENDS_WITH,omitempty"`
+	Visibility           *string        `json:"visibility,omitempty"`
+	VisibilityNot        *string        `json:"visibility_NOT,omitempty"`
+	VisibilityIn         []string       `json:"visibility_IN,omitempty"`
+	VisibilityNotIn      []string       `json:"visibility_NOT_IN,omitempty"`
+	VisibilityGt         *string        `json:"visibility_GT,omitempty"`
+	VisibilityGte        *string        `json:"visibility_GTE,omitempty"`
+	VisibilityLt         *string        `json:"visibility_LT,omitempty"`
+	VisibilityLte        *string        `json:"visibility_LTE,omitempty"`
+	VisibilityContains   *string        `json:"visibility_CONTAINS,omitempty"`
+	VisibilityStartsWith *string        `json:"visibility_STARTS_WITH,omitempty"`
+	VisibilityEndsWith   *string        `json:"visibility_ENDS_WITH,omitempty"`
+	Kind                 *string        `json:"kind,omitempty"`
+	KindNot              *string        `json:"kind_NOT,omitempty"`
+	KindIn               []string       `json:"kind_IN,omitempty"`
+	KindNotIn            []string       `json:"kind_NOT_IN,omitempty"`
+	KindGt               *string        `json:"kind_GT,omitempty"`
+	KindGte              *string        `json:"kind_GTE,omitempty"`
+	KindLt               *string        `json:"kind_LT,omitempty"`
+	KindLte              *string        `json:"kind_LTE,omitempty"`
+	KindContains         *string        `json:"kind_CONTAINS,omitempty"`
+	KindStartsWith       *string        `json:"kind_STARTS_WITH,omitempty"`
+	KindEndsWith         *string        `json:"kind_ENDS_WITH,omitempty"`
+	StartingLine         *int           `json:"startingLine,omitempty"`
+	StartingLineNot      *int           `json:"startingLine_NOT,omitempty"`
+	StartingLineIn       []int          `json:"startingLine_IN,omitempty"`
+	StartingLineNotIn    []int          `json:"startingLine_NOT_IN,omitempty"`
+	StartingLineGt       *int           `json:"startingLine_GT,omitempty"`
+	StartingLineGte      *int           `json:"startingLine_GTE,omitempty"`
+	StartingLineLt       *int           `json:"startingLine_LT,omitempty"`
+	StartingLineLte      *int           `json:"startingLine_LTE,omitempty"`
+	EndingLine           *int           `json:"endingLine,omitempty"`
+	EndingLineNot        *int           `json:"endingLine_NOT,omitempty"`
+	EndingLineIn         []int          `json:"endingLine_IN,omitempty"`
+	EndingLineNotIn      []int          `json:"endingLine_NOT_IN,omitempty"`
+	EndingLineGt         *int           `json:"endingLine_GT,omitempty"`
+	EndingLineGte        *int           `json:"endingLine_GTE,omitempty"`
+	EndingLineLt         *int           `json:"endingLine_LT,omitempty"`
+	EndingLineLte        *int           `json:"endingLine_LTE,omitempty"`
+	AND                  []*ModuleWhere `json:"AND,omitempty"`
+	OR                   []*ModuleWhere `json:"OR,omitempty"`
+	NOT                  *ModuleWhere   `json:"NOT,omitempty"`
+}
+
+type ModuleSort struct {
+	Id           *SortDirection `json:"id,omitempty"`
+	Name         *SortDirection `json:"name,omitempty"`
+	Path         *SortDirection `json:"path,omitempty"`
+	Language     *SortDirection `json:"language,omitempty"`
+	ImportPath   *SortDirection `json:"importPath,omitempty"`
+	Visibility   *SortDirection `json:"visibility,omitempty"`
+	Kind         *SortDirection `json:"kind,omitempty"`
+	StartingLine *SortDirection `json:"startingLine,omitempty"`
+	EndingLine   *SortDirection `json:"endingLine,omitempty"`
+}
+
+type ModulesConnection struct {
+	Edges      []*ModuleEdge `json:"edges"`
+	TotalCount int           `json:"totalCount"`
+	PageInfo   PageInfo      `json:"pageInfo"`
+}
+
+type ModuleEdge struct {
+	Node   *Module `json:"node"`
+	Cursor string  `json:"cursor"`
+}
+
+type CreateModulesMutationResponse struct {
+	Modules []*Module `json:"modules"`
+}
+
+type UpdateModulesMutationResponse struct {
+	Modules []*Module `json:"modules"`
+}
+
+type ModuleFunctionsConnection struct {
+	Edges      []*ModuleFunctionsEdge `json:"edges"`
+	TotalCount int                    `json:"totalCount"`
+	PageInfo   PageInfo               `json:"pageInfo"`
+}
+
+type ModuleFunctionsEdge struct {
+	Node   *Function `json:"node"`
+	Cursor string    `json:"cursor"`
+}
+
+type ModuleFunctionsFieldInput struct {
+	Create  []*ModuleFunctionsCreateFieldInput  `json:"create,omitempty"`
+	Connect []*ModuleFunctionsConnectFieldInput `json:"connect,omitempty"`
+}
+
+type ModuleFunctionsUpdateFieldInput struct {
+	Create     []*ModuleFunctionsCreateFieldInput      `json:"create,omitempty"`
+	Connect    []*ModuleFunctionsConnectFieldInput     `json:"connect,omitempty"`
+	Disconnect []*ModuleFunctionsDisconnectFieldInput  `json:"disconnect,omitempty"`
+	Update     []*ModuleFunctionsUpdateConnectionInput `json:"update,omitempty"`
+	Delete     []*ModuleFunctionsDeleteFieldInput      `json:"delete,omitempty"`
+}
+
+type ModuleFunctionsCreateFieldInput struct {
+	Node FunctionCreateInput `json:"node"`
+}
+
+type ModuleFunctionsConnectFieldInput struct {
+	Where FunctionWhere `json:"where"`
+}
+
+type ModuleFunctionsDisconnectFieldInput struct {
+	Where FunctionWhere `json:"where"`
+}
+
+type ModuleFunctionsUpdateConnectionInput struct {
+	Where FunctionWhere        `json:"where"`
+	Node  *FunctionUpdateInput `json:"node,omitempty"`
+}
+
+type ModuleFunctionsDeleteFieldInput struct {
+	Where FunctionWhere `json:"where"`
+}
+
+type ModuleClassesConnection struct {
+	Edges      []*ModuleClassesEdge `json:"edges"`
+	TotalCount int                  `json:"totalCount"`
+	PageInfo   PageInfo             `json:"pageInfo"`
+}
+
+type ModuleClassesEdge struct {
+	Node   *Class `json:"node"`
+	Cursor string `json:"cursor"`
+}
+
+type ModuleClassesFieldInput struct {
+	Create  []*ModuleClassesCreateFieldInput  `json:"create,omitempty"`
+	Connect []*ModuleClassesConnectFieldInput `json:"connect,omitempty"`
+}
+
+type ModuleClassesUpdateFieldInput struct {
+	Create     []*ModuleClassesCreateFieldInput      `json:"create,omitempty"`
+	Connect    []*ModuleClassesConnectFieldInput     `json:"connect,omitempty"`
+	Disconnect []*ModuleClassesDisconnectFieldInput  `json:"disconnect,omitempty"`
+	Update     []*ModuleClassesUpdateConnectionInput `json:"update,omitempty"`
+	Delete     []*ModuleClassesDeleteFieldInput      `json:"delete,omitempty"`
+}
+
+type ModuleClassesCreateFieldInput struct {
+	Node ClassCreateInput `json:"node"`
+}
+
+type ModuleClassesConnectFieldInput struct {
+	Where ClassWhere `json:"where"`
+}
+
+type ModuleClassesDisconnectFieldInput struct {
+	Where ClassWhere `json:"where"`
+}
+
+type ModuleClassesUpdateConnectionInput struct {
+	Where ClassWhere        `json:"where"`
+	Node  *ClassUpdateInput `json:"node,omitempty"`
+}
+
+type ModuleClassesDeleteFieldInput struct {
+	Where ClassWhere `json:"where"`
+}
+
+type ModuleDependsOnConnection struct {
+	Edges      []*ModuleDependsOnEdge `json:"edges"`
+	TotalCount int                    `json:"totalCount"`
+	PageInfo   PageInfo               `json:"pageInfo"`
+}
+
+type ModuleDependsOnEdge struct {
+	Node   *Module `json:"node"`
+	Cursor string  `json:"cursor"`
+}
+
+type ModuleDependsOnFieldInput struct {
+	Create  []*ModuleDependsOnCreateFieldInput  `json:"create,omitempty"`
+	Connect []*ModuleDependsOnConnectFieldInput `json:"connect,omitempty"`
+}
+
+type ModuleDependsOnUpdateFieldInput struct {
+	Create     []*ModuleDependsOnCreateFieldInput      `json:"create,omitempty"`
+	Connect    []*ModuleDependsOnConnectFieldInput     `json:"connect,omitempty"`
+	Disconnect []*ModuleDependsOnDisconnectFieldInput  `json:"disconnect,omitempty"`
+	Update     []*ModuleDependsOnUpdateConnectionInput `json:"update,omitempty"`
+	Delete     []*ModuleDependsOnDeleteFieldInput      `json:"delete,omitempty"`
+}
+
+type ModuleDependsOnCreateFieldInput struct {
+	Node ModuleCreateInput `json:"node"`
+}
+
+type ModuleDependsOnConnectFieldInput struct {
+	Where ModuleWhere `json:"where"`
+}
+
+type ModuleDependsOnDisconnectFieldInput struct {
+	Where ModuleWhere `json:"where"`
+}
+
+type ModuleDependsOnUpdateConnectionInput struct {
+	Where ModuleWhere        `json:"where"`
+	Node  *ModuleUpdateInput `json:"node,omitempty"`
+}
+
+type ModuleDependsOnDeleteFieldInput struct {
+	Where ModuleWhere `json:"where"`
+}
+
+type ModuleDependedOnByConnection struct {
+	Edges      []*ModuleDependedOnByEdge `json:"edges"`
+	TotalCount int                       `json:"totalCount"`
+	PageInfo   PageInfo                  `json:"pageInfo"`
+}
+
+type ModuleDependedOnByEdge struct {
+	Node   *Module `json:"node"`
+	Cursor string  `json:"cursor"`
+}
+
+type ModuleDependedOnByFieldInput struct {
+	Create  []*ModuleDependedOnByCreateFieldInput  `json:"create,omitempty"`
+	Connect []*ModuleDependedOnByConnectFieldInput `json:"connect,omitempty"`
+}
+
+type ModuleDependedOnByUpdateFieldInput struct {
+	Create     []*ModuleDependedOnByCreateFieldInput      `json:"create,omitempty"`
+	Connect    []*ModuleDependedOnByConnectFieldInput     `json:"connect,omitempty"`
+	Disconnect []*ModuleDependedOnByDisconnectFieldInput  `json:"disconnect,omitempty"`
+	Update     []*ModuleDependedOnByUpdateConnectionInput `json:"update,omitempty"`
+	Delete     []*ModuleDependedOnByDeleteFieldInput      `json:"delete,omitempty"`
+}
+
+type ModuleDependedOnByCreateFieldInput struct {
+	Node ModuleCreateInput `json:"node"`
+}
+
+type ModuleDependedOnByConnectFieldInput struct {
+	Where ModuleWhere `json:"where"`
+}
+
+type ModuleDependedOnByDisconnectFieldInput struct {
+	Where ModuleWhere `json:"where"`
+}
+
+type ModuleDependedOnByUpdateConnectionInput struct {
+	Where ModuleWhere        `json:"where"`
+	Node  *ModuleUpdateInput `json:"node,omitempty"`
+}
+
+type ModuleDependedOnByDeleteFieldInput struct {
+	Where ModuleWhere `json:"where"`
+}
+
+type ModuleImportedByConnection struct {
+	Edges      []*ModuleImportedByEdge `json:"edges"`
+	TotalCount int                     `json:"totalCount"`
+	PageInfo   PageInfo                `json:"pageInfo"`
+}
+
+type ModuleImportedByEdge struct {
+	Node   *File  `json:"node"`
+	Cursor string `json:"cursor"`
+}
+
+type ModuleImportedByFieldInput struct {
+	Create  []*ModuleImportedByCreateFieldInput  `json:"create,omitempty"`
+	Connect []*ModuleImportedByConnectFieldInput `json:"connect,omitempty"`
+}
+
+type ModuleImportedByUpdateFieldInput struct {
+	Create     []*ModuleImportedByCreateFieldInput      `json:"create,omitempty"`
+	Connect    []*ModuleImportedByConnectFieldInput     `json:"connect,omitempty"`
+	Disconnect []*ModuleImportedByDisconnectFieldInput  `json:"disconnect,omitempty"`
+	Update     []*ModuleImportedByUpdateConnectionInput `json:"update,omitempty"`
+	Delete     []*ModuleImportedByDeleteFieldInput      `json:"delete,omitempty"`
+}
+
+type ModuleImportedByCreateFieldInput struct {
+	Node FileCreateInput `json:"node"`
+}
+
+type ModuleImportedByConnectFieldInput struct {
+	Where FileWhere `json:"where"`
+}
+
+type ModuleImportedByDisconnectFieldInput struct {
+	Where FileWhere `json:"where"`
+}
+
+type ModuleImportedByUpdateConnectionInput struct {
+	Where FileWhere        `json:"where"`
+	Node  *FileUpdateInput `json:"node,omitempty"`
+}
+
+type ModuleImportedByDeleteFieldInput struct {
+	Where FileWhere `json:"where"`
+}
+
+type ModuleRepositoryConnection struct {
+	Edges      []*ModuleRepositoryEdge `json:"edges"`
+	TotalCount int                     `json:"totalCount"`
+	PageInfo   PageInfo                `json:"pageInfo"`
+}
+
+type ModuleRepositoryEdge struct {
+	Node   *Repository `json:"node"`
+	Cursor string      `json:"cursor"`
+}
+
+type ModuleRepositoryFieldInput struct {
+	Create  []*ModuleRepositoryCreateFieldInput  `json:"create,omitempty"`
+	Connect []*ModuleRepositoryConnectFieldInput `json:"connect,omitempty"`
+}
+
+type ModuleRepositoryUpdateFieldInput struct {
+	Create     []*ModuleRepositoryCreateFieldInput      `json:"create,omitempty"`
+	Connect    []*ModuleRepositoryConnectFieldInput     `json:"connect,omitempty"`
+	Disconnect []*ModuleRepositoryDisconnectFieldInput  `json:"disconnect,omitempty"`
+	Update     []*ModuleRepositoryUpdateConnectionInput `json:"update,omitempty"`
+	Delete     []*ModuleRepositoryDeleteFieldInput      `json:"delete,omitempty"`
+}
+
+type ModuleRepositoryCreateFieldInput struct {
 	Node RepositoryCreateInput `json:"node"`
 }
 
-type ClassRepositoryConnectFieldInput struct {
+type ModuleRepositoryConnectFieldInput struct {
 	Where RepositoryWhere `json:"where"`
 }
 
-type ClassRepositoryDisconnectFieldInput struct {
+type ModuleRepositoryDisconnectFieldInput struct {
 	Where RepositoryWhere `json:"where"`
 }
 
-type ClassRepositoryUpdateConnectionInput struct {
+type ModuleRepositoryUpdateConnectionInput struct {
 	Where RepositoryWhere        `json:"where"`
 	Node  *RepositoryUpdateInput `json:"node,omitempty"`
 }
 
-type ClassRepositoryDeleteFieldInput struct {
+type ModuleRepositoryDeleteFieldInput struct {
 	Where RepositoryWhere `json:"where"`
 }
 
@@ -1219,439 +1371,543 @@ type FileRepositoryDeleteFieldInput struct {
 	Where RepositoryWhere `json:"where"`
 }
 
-type Module struct {
-	Id           string        `json:"id"`
-	Name         string        `json:"name"`
-	Path         string        `json:"path"`
-	Language     *string       `json:"language,omitempty"`
-	ImportPath   *string       `json:"importPath,omitempty"`
-	Visibility   *string       `json:"visibility,omitempty"`
-	Kind         *string       `json:"kind,omitempty"`
-	StartingLine *int          `json:"startingLine,omitempty"`
-	EndingLine   *int          `json:"endingLine,omitempty"`
-	Functions    []*Function   `json:"functions,omitempty"`
-	Classes      []*Class      `json:"classes,omitempty"`
-	DependsOn    []*Module     `json:"dependsOn,omitempty"`
-	DependedOnBy []*Module     `json:"dependedOnBy,omitempty"`
-	ImportedBy   []*File       `json:"importedBy,omitempty"`
-	Repository   []*Repository `json:"repository,omitempty"`
+type Class struct {
+	Id            string        `json:"id"`
+	Name          string        `json:"name"`
+	Path          string        `json:"path"`
+	Language      *string       `json:"language,omitempty"`
+	Kind          string        `json:"kind"`
+	Visibility    *string       `json:"visibility,omitempty"`
+	Source        *string       `json:"source,omitempty"`
+	StartingLine  *int          `json:"startingLine,omitempty"`
+	EndingLine    *int          `json:"endingLine,omitempty"`
+	Decorators    []string      `json:"decorators,omitempty"`
+	Methods       []*Function   `json:"methods,omitempty"`
+	Inherits      []*Class      `json:"inherits,omitempty"`
+	InheritedBy   []*Class      `json:"inheritedBy,omitempty"`
+	Implements    []*Class      `json:"implements,omitempty"`
+	ImplementedBy []*Class      `json:"implementedBy,omitempty"`
+	DefinedIn     []*File       `json:"definedIn,omitempty"`
+	Module        []*Module     `json:"module,omitempty"`
+	Repository    []*Repository `json:"repository,omitempty"`
 }
 
-type ModuleCreateInput struct {
-	Name         string  `json:"name"`
-	Path         string  `json:"path"`
-	Language     *string `json:"language,omitempty"`
-	ImportPath   *string `json:"importPath,omitempty"`
-	Visibility   *string `json:"visibility,omitempty"`
-	Kind         *string `json:"kind,omitempty"`
-	StartingLine *int    `json:"startingLine,omitempty"`
-	EndingLine   *int    `json:"endingLine,omitempty"`
+type ClassCreateInput struct {
+	Name         string   `json:"name"`
+	Path         string   `json:"path"`
+	Language     *string  `json:"language,omitempty"`
+	Kind         string   `json:"kind"`
+	Visibility   *string  `json:"visibility,omitempty"`
+	Source       *string  `json:"source,omitempty"`
+	StartingLine *int     `json:"startingLine,omitempty"`
+	EndingLine   *int     `json:"endingLine,omitempty"`
+	Decorators   []string `json:"decorators,omitempty"`
 }
 
-type ModuleUpdateInput struct {
-	Name         *string `json:"name,omitempty"`
-	Path         *string `json:"path,omitempty"`
-	Language     *string `json:"language,omitempty"`
-	ImportPath   *string `json:"importPath,omitempty"`
-	Visibility   *string `json:"visibility,omitempty"`
-	Kind         *string `json:"kind,omitempty"`
-	StartingLine *int    `json:"startingLine,omitempty"`
-	EndingLine   *int    `json:"endingLine,omitempty"`
+type ClassUpdateInput struct {
+	Name         *string  `json:"name,omitempty"`
+	Path         *string  `json:"path,omitempty"`
+	Language     *string  `json:"language,omitempty"`
+	Kind         *string  `json:"kind,omitempty"`
+	Visibility   *string  `json:"visibility,omitempty"`
+	Source       *string  `json:"source,omitempty"`
+	StartingLine *int     `json:"startingLine,omitempty"`
+	EndingLine   *int     `json:"endingLine,omitempty"`
+	Decorators   []string `json:"decorators,omitempty"`
 }
 
-type ModuleWhere struct {
-	Id                   *string        `json:"id,omitempty"`
-	IdNot                *string        `json:"id_NOT,omitempty"`
-	IdIn                 []string       `json:"id_IN,omitempty"`
-	IdNotIn              []string       `json:"id_NOT_IN,omitempty"`
-	IdContains           *string        `json:"id_CONTAINS,omitempty"`
-	IdStartsWith         *string        `json:"id_STARTS_WITH,omitempty"`
-	IdEndsWith           *string        `json:"id_ENDS_WITH,omitempty"`
-	Name                 *string        `json:"name,omitempty"`
-	NameNot              *string        `json:"name_NOT,omitempty"`
-	NameIn               []string       `json:"name_IN,omitempty"`
-	NameNotIn            []string       `json:"name_NOT_IN,omitempty"`
-	NameGt               *string        `json:"name_GT,omitempty"`
-	NameGte              *string        `json:"name_GTE,omitempty"`
-	NameLt               *string        `json:"name_LT,omitempty"`
-	NameLte              *string        `json:"name_LTE,omitempty"`
-	NameContains         *string        `json:"name_CONTAINS,omitempty"`
-	NameStartsWith       *string        `json:"name_STARTS_WITH,omitempty"`
-	NameEndsWith         *string        `json:"name_ENDS_WITH,omitempty"`
-	Path                 *string        `json:"path,omitempty"`
-	PathNot              *string        `json:"path_NOT,omitempty"`
-	PathIn               []string       `json:"path_IN,omitempty"`
-	PathNotIn            []string       `json:"path_NOT_IN,omitempty"`
-	PathGt               *string        `json:"path_GT,omitempty"`
-	PathGte              *string        `json:"path_GTE,omitempty"`
-	PathLt               *string        `json:"path_LT,omitempty"`
-	PathLte              *string        `json:"path_LTE,omitempty"`
-	PathContains         *string        `json:"path_CONTAINS,omitempty"`
-	PathStartsWith       *string        `json:"path_STARTS_WITH,omitempty"`
-	PathEndsWith         *string        `json:"path_ENDS_WITH,omitempty"`
-	Language             *string        `json:"language,omitempty"`
-	LanguageNot          *string        `json:"language_NOT,omitempty"`
-	LanguageIn           []string       `json:"language_IN,omitempty"`
-	LanguageNotIn        []string       `json:"language_NOT_IN,omitempty"`
-	LanguageGt           *string        `json:"language_GT,omitempty"`
-	LanguageGte          *string        `json:"language_GTE,omitempty"`
-	LanguageLt           *string        `json:"language_LT,omitempty"`
-	LanguageLte          *string        `json:"language_LTE,omitempty"`
-	LanguageContains     *string        `json:"language_CONTAINS,omitempty"`
-	LanguageStartsWith   *string        `json:"language_STARTS_WITH,omitempty"`
-	LanguageEndsWith     *string        `json:"language_ENDS_WITH,omitempty"`
-	ImportPath           *string        `json:"importPath,omitempty"`
-	ImportPathNot        *string        `json:"importPath_NOT,omitempty"`
-	ImportPathIn         []string       `json:"importPath_IN,omitempty"`
-	ImportPathNotIn      []string       `json:"importPath_NOT_IN,omitempty"`
-	ImportPathGt         *string        `json:"importPath_GT,omitempty"`
-	ImportPathGte        *string        `json:"importPath_GTE,omitempty"`
-	ImportPathLt         *string        `json:"importPath_LT,omitempty"`
-	ImportPathLte        *string        `json:"importPath_LTE,omitempty"`
-	ImportPathContains   *string        `json:"importPath_CONTAINS,omitempty"`
-	ImportPathStartsWith *string        `json:"importPath_STARTS_WITH,omitempty"`
-	ImportPathEndsWith   *string        `json:"importPath_ENDS_WITH,omitempty"`
-	Visibility           *string        `json:"visibility,omitempty"`
-	VisibilityNot        *string        `json:"visibility_NOT,omitempty"`
-	VisibilityIn         []string       `json:"visibility_IN,omitempty"`
-	VisibilityNotIn      []string       `json:"visibility_NOT_IN,omitempty"`
-	VisibilityGt         *string        `json:"visibility_GT,omitempty"`
-	VisibilityGte        *string        `json:"visibility_GTE,omitempty"`
-	VisibilityLt         *string        `json:"visibility_LT,omitempty"`
-	VisibilityLte        *string        `json:"visibility_LTE,omitempty"`
-	VisibilityContains   *string        `json:"visibility_CONTAINS,omitempty"`
-	VisibilityStartsWith *string        `json:"visibility_STARTS_WITH,omitempty"`
-	VisibilityEndsWith   *string        `json:"visibility_ENDS_WITH,omitempty"`
-	Kind                 *string        `json:"kind,omitempty"`
-	KindNot              *string        `json:"kind_NOT,omitempty"`
-	KindIn               []string       `json:"kind_IN,omitempty"`
-	KindNotIn            []string       `json:"kind_NOT_IN,omitempty"`
-	KindGt               *string        `json:"kind_GT,omitempty"`
-	KindGte              *string        `json:"kind_GTE,omitempty"`
-	KindLt               *string        `json:"kind_LT,omitempty"`
-	KindLte              *string        `json:"kind_LTE,omitempty"`
-	KindContains         *string        `json:"kind_CONTAINS,omitempty"`
-	KindStartsWith       *string        `json:"kind_STARTS_WITH,omitempty"`
-	KindEndsWith         *string        `json:"kind_ENDS_WITH,omitempty"`
-	StartingLine         *int           `json:"startingLine,omitempty"`
-	StartingLineNot      *int           `json:"startingLine_NOT,omitempty"`
-	StartingLineIn       []int          `json:"startingLine_IN,omitempty"`
-	StartingLineNotIn    []int          `json:"startingLine_NOT_IN,omitempty"`
-	StartingLineGt       *int           `json:"startingLine_GT,omitempty"`
-	StartingLineGte      *int           `json:"startingLine_GTE,omitempty"`
-	StartingLineLt       *int           `json:"startingLine_LT,omitempty"`
-	StartingLineLte      *int           `json:"startingLine_LTE,omitempty"`
-	EndingLine           *int           `json:"endingLine,omitempty"`
-	EndingLineNot        *int           `json:"endingLine_NOT,omitempty"`
-	EndingLineIn         []int          `json:"endingLine_IN,omitempty"`
-	EndingLineNotIn      []int          `json:"endingLine_NOT_IN,omitempty"`
-	EndingLineGt         *int           `json:"endingLine_GT,omitempty"`
-	EndingLineGte        *int           `json:"endingLine_GTE,omitempty"`
-	EndingLineLt         *int           `json:"endingLine_LT,omitempty"`
-	EndingLineLte        *int           `json:"endingLine_LTE,omitempty"`
-	AND                  []*ModuleWhere `json:"AND,omitempty"`
-	OR                   []*ModuleWhere `json:"OR,omitempty"`
-	NOT                  *ModuleWhere   `json:"NOT,omitempty"`
+type ClassWhere struct {
+	Id                   *string       `json:"id,omitempty"`
+	IdNot                *string       `json:"id_NOT,omitempty"`
+	IdIn                 []string      `json:"id_IN,omitempty"`
+	IdNotIn              []string      `json:"id_NOT_IN,omitempty"`
+	IdContains           *string       `json:"id_CONTAINS,omitempty"`
+	IdStartsWith         *string       `json:"id_STARTS_WITH,omitempty"`
+	IdEndsWith           *string       `json:"id_ENDS_WITH,omitempty"`
+	Name                 *string       `json:"name,omitempty"`
+	NameNot              *string       `json:"name_NOT,omitempty"`
+	NameIn               []string      `json:"name_IN,omitempty"`
+	NameNotIn            []string      `json:"name_NOT_IN,omitempty"`
+	NameGt               *string       `json:"name_GT,omitempty"`
+	NameGte              *string       `json:"name_GTE,omitempty"`
+	NameLt               *string       `json:"name_LT,omitempty"`
+	NameLte              *string       `json:"name_LTE,omitempty"`
+	NameContains         *string       `json:"name_CONTAINS,omitempty"`
+	NameStartsWith       *string       `json:"name_STARTS_WITH,omitempty"`
+	NameEndsWith         *string       `json:"name_ENDS_WITH,omitempty"`
+	Path                 *string       `json:"path,omitempty"`
+	PathNot              *string       `json:"path_NOT,omitempty"`
+	PathIn               []string      `json:"path_IN,omitempty"`
+	PathNotIn            []string      `json:"path_NOT_IN,omitempty"`
+	PathGt               *string       `json:"path_GT,omitempty"`
+	PathGte              *string       `json:"path_GTE,omitempty"`
+	PathLt               *string       `json:"path_LT,omitempty"`
+	PathLte              *string       `json:"path_LTE,omitempty"`
+	PathContains         *string       `json:"path_CONTAINS,omitempty"`
+	PathStartsWith       *string       `json:"path_STARTS_WITH,omitempty"`
+	PathEndsWith         *string       `json:"path_ENDS_WITH,omitempty"`
+	Language             *string       `json:"language,omitempty"`
+	LanguageNot          *string       `json:"language_NOT,omitempty"`
+	LanguageIn           []string      `json:"language_IN,omitempty"`
+	LanguageNotIn        []string      `json:"language_NOT_IN,omitempty"`
+	LanguageGt           *string       `json:"language_GT,omitempty"`
+	LanguageGte          *string       `json:"language_GTE,omitempty"`
+	LanguageLt           *string       `json:"language_LT,omitempty"`
+	LanguageLte          *string       `json:"language_LTE,omitempty"`
+	LanguageContains     *string       `json:"language_CONTAINS,omitempty"`
+	LanguageStartsWith   *string       `json:"language_STARTS_WITH,omitempty"`
+	LanguageEndsWith     *string       `json:"language_ENDS_WITH,omitempty"`
+	Kind                 *string       `json:"kind,omitempty"`
+	KindNot              *string       `json:"kind_NOT,omitempty"`
+	KindIn               []string      `json:"kind_IN,omitempty"`
+	KindNotIn            []string      `json:"kind_NOT_IN,omitempty"`
+	KindGt               *string       `json:"kind_GT,omitempty"`
+	KindGte              *string       `json:"kind_GTE,omitempty"`
+	KindLt               *string       `json:"kind_LT,omitempty"`
+	KindLte              *string       `json:"kind_LTE,omitempty"`
+	KindContains         *string       `json:"kind_CONTAINS,omitempty"`
+	KindStartsWith       *string       `json:"kind_STARTS_WITH,omitempty"`
+	KindEndsWith         *string       `json:"kind_ENDS_WITH,omitempty"`
+	Visibility           *string       `json:"visibility,omitempty"`
+	VisibilityNot        *string       `json:"visibility_NOT,omitempty"`
+	VisibilityIn         []string      `json:"visibility_IN,omitempty"`
+	VisibilityNotIn      []string      `json:"visibility_NOT_IN,omitempty"`
+	VisibilityGt         *string       `json:"visibility_GT,omitempty"`
+	VisibilityGte        *string       `json:"visibility_GTE,omitempty"`
+	VisibilityLt         *string       `json:"visibility_LT,omitempty"`
+	VisibilityLte        *string       `json:"visibility_LTE,omitempty"`
+	VisibilityContains   *string       `json:"visibility_CONTAINS,omitempty"`
+	VisibilityStartsWith *string       `json:"visibility_STARTS_WITH,omitempty"`
+	VisibilityEndsWith   *string       `json:"visibility_ENDS_WITH,omitempty"`
+	Source               *string       `json:"source,omitempty"`
+	SourceNot            *string       `json:"source_NOT,omitempty"`
+	SourceIn             []string      `json:"source_IN,omitempty"`
+	SourceNotIn          []string      `json:"source_NOT_IN,omitempty"`
+	SourceGt             *string       `json:"source_GT,omitempty"`
+	SourceGte            *string       `json:"source_GTE,omitempty"`
+	SourceLt             *string       `json:"source_LT,omitempty"`
+	SourceLte            *string       `json:"source_LTE,omitempty"`
+	SourceContains       *string       `json:"source_CONTAINS,omitempty"`
+	SourceStartsWith     *string       `json:"source_STARTS_WITH,omitempty"`
+	SourceEndsWith       *string       `json:"source_ENDS_WITH,omitempty"`
+	StartingLine         *int          `json:"startingLine,omitempty"`
+	StartingLineNot      *int          `json:"startingLine_NOT,omitempty"`
+	StartingLineIn       []int         `json:"startingLine_IN,omitempty"`
+	StartingLineNotIn    []int         `json:"startingLine_NOT_IN,omitempty"`
+	StartingLineGt       *int          `json:"startingLine_GT,omitempty"`
+	StartingLineGte      *int          `json:"startingLine_GTE,omitempty"`
+	StartingLineLt       *int          `json:"startingLine_LT,omitempty"`
+	StartingLineLte      *int          `json:"startingLine_LTE,omitempty"`
+	EndingLine           *int          `json:"endingLine,omitempty"`
+	EndingLineNot        *int          `json:"endingLine_NOT,omitempty"`
+	EndingLineIn         []int         `json:"endingLine_IN,omitempty"`
+	EndingLineNotIn      []int         `json:"endingLine_NOT_IN,omitempty"`
+	EndingLineGt         *int          `json:"endingLine_GT,omitempty"`
+	EndingLineGte        *int          `json:"endingLine_GTE,omitempty"`
+	EndingLineLt         *int          `json:"endingLine_LT,omitempty"`
+	EndingLineLte        *int          `json:"endingLine_LTE,omitempty"`
+	Decorators           *[]string     `json:"decorators,omitempty"`
+	DecoratorsNot        *[]string     `json:"decorators_NOT,omitempty"`
+	DecoratorsIn         [][]string    `json:"decorators_IN,omitempty"`
+	DecoratorsNotIn      [][]string    `json:"decorators_NOT_IN,omitempty"`
+	DecoratorsGt         *[]string     `json:"decorators_GT,omitempty"`
+	DecoratorsGte        *[]string     `json:"decorators_GTE,omitempty"`
+	DecoratorsLt         *[]string     `json:"decorators_LT,omitempty"`
+	DecoratorsLte        *[]string     `json:"decorators_LTE,omitempty"`
+	AND                  []*ClassWhere `json:"AND,omitempty"`
+	OR                   []*ClassWhere `json:"OR,omitempty"`
+	NOT                  *ClassWhere   `json:"NOT,omitempty"`
 }
 
-type ModuleSort struct {
+type ClassSort struct {
 	Id           *SortDirection `json:"id,omitempty"`
 	Name         *SortDirection `json:"name,omitempty"`
 	Path         *SortDirection `json:"path,omitempty"`
 	Language     *SortDirection `json:"language,omitempty"`
-	ImportPath   *SortDirection `json:"importPath,omitempty"`
-	Visibility   *SortDirection `json:"visibility,omitempty"`
 	Kind         *SortDirection `json:"kind,omitempty"`
+	Visibility   *SortDirection `json:"visibility,omitempty"`
+	Source       *SortDirection `json:"source,omitempty"`
 	StartingLine *SortDirection `json:"startingLine,omitempty"`
 	EndingLine   *SortDirection `json:"endingLine,omitempty"`
+	Decorators   *SortDirection `json:"decorators,omitempty"`
 }
 
-type ModulesConnection struct {
-	Edges      []*ModuleEdge `json:"edges"`
-	TotalCount int           `json:"totalCount"`
-	PageInfo   PageInfo      `json:"pageInfo"`
+type ClasssConnection struct {
+	Edges      []*ClassEdge `json:"edges"`
+	TotalCount int          `json:"totalCount"`
+	PageInfo   PageInfo     `json:"pageInfo"`
 }
 
-type ModuleEdge struct {
-	Node   *Module `json:"node"`
-	Cursor string  `json:"cursor"`
-}
-
-type CreateModulesMutationResponse struct {
-	Modules []*Module `json:"modules"`
-}
-
-type UpdateModulesMutationResponse struct {
-	Modules []*Module `json:"modules"`
-}
-
-type ModuleFunctionsConnection struct {
-	Edges      []*ModuleFunctionsEdge `json:"edges"`
-	TotalCount int                    `json:"totalCount"`
-	PageInfo   PageInfo               `json:"pageInfo"`
-}
-
-type ModuleFunctionsEdge struct {
-	Node   *Function `json:"node"`
-	Cursor string    `json:"cursor"`
-}
-
-type ModuleFunctionsFieldInput struct {
-	Create  []*ModuleFunctionsCreateFieldInput  `json:"create,omitempty"`
-	Connect []*ModuleFunctionsConnectFieldInput `json:"connect,omitempty"`
-}
-
-type ModuleFunctionsUpdateFieldInput struct {
-	Create     []*ModuleFunctionsCreateFieldInput      `json:"create,omitempty"`
-	Connect    []*ModuleFunctionsConnectFieldInput     `json:"connect,omitempty"`
-	Disconnect []*ModuleFunctionsDisconnectFieldInput  `json:"disconnect,omitempty"`
-	Update     []*ModuleFunctionsUpdateConnectionInput `json:"update,omitempty"`
-	Delete     []*ModuleFunctionsDeleteFieldInput      `json:"delete,omitempty"`
-}
-
-type ModuleFunctionsCreateFieldInput struct {
-	Node FunctionCreateInput `json:"node"`
-}
-
-type ModuleFunctionsConnectFieldInput struct {
-	Where FunctionWhere `json:"where"`
-}
-
-type ModuleFunctionsDisconnectFieldInput struct {
-	Where FunctionWhere `json:"where"`
-}
-
-type ModuleFunctionsUpdateConnectionInput struct {
-	Where FunctionWhere        `json:"where"`
-	Node  *FunctionUpdateInput `json:"node,omitempty"`
-}
-
-type ModuleFunctionsDeleteFieldInput struct {
-	Where FunctionWhere `json:"where"`
-}
-
-type ModuleClassesConnection struct {
-	Edges      []*ModuleClassesEdge `json:"edges"`
-	TotalCount int                  `json:"totalCount"`
-	PageInfo   PageInfo             `json:"pageInfo"`
-}
-
-type ModuleClassesEdge struct {
+type ClassEdge struct {
 	Node   *Class `json:"node"`
 	Cursor string `json:"cursor"`
 }
 
-type ModuleClassesFieldInput struct {
-	Create  []*ModuleClassesCreateFieldInput  `json:"create,omitempty"`
-	Connect []*ModuleClassesConnectFieldInput `json:"connect,omitempty"`
+type CreateClasssMutationResponse struct {
+	Classs []*Class `json:"classs"`
 }
 
-type ModuleClassesUpdateFieldInput struct {
-	Create     []*ModuleClassesCreateFieldInput      `json:"create,omitempty"`
-	Connect    []*ModuleClassesConnectFieldInput     `json:"connect,omitempty"`
-	Disconnect []*ModuleClassesDisconnectFieldInput  `json:"disconnect,omitempty"`
-	Update     []*ModuleClassesUpdateConnectionInput `json:"update,omitempty"`
-	Delete     []*ModuleClassesDeleteFieldInput      `json:"delete,omitempty"`
+type UpdateClasssMutationResponse struct {
+	Classs []*Class `json:"classs"`
 }
 
-type ModuleClassesCreateFieldInput struct {
+type ClassMethodsConnection struct {
+	Edges      []*ClassMethodsEdge `json:"edges"`
+	TotalCount int                 `json:"totalCount"`
+	PageInfo   PageInfo            `json:"pageInfo"`
+}
+
+type ClassMethodsEdge struct {
+	Node   *Function `json:"node"`
+	Cursor string    `json:"cursor"`
+}
+
+type ClassMethodsFieldInput struct {
+	Create  []*ClassMethodsCreateFieldInput  `json:"create,omitempty"`
+	Connect []*ClassMethodsConnectFieldInput `json:"connect,omitempty"`
+}
+
+type ClassMethodsUpdateFieldInput struct {
+	Create     []*ClassMethodsCreateFieldInput      `json:"create,omitempty"`
+	Connect    []*ClassMethodsConnectFieldInput     `json:"connect,omitempty"`
+	Disconnect []*ClassMethodsDisconnectFieldInput  `json:"disconnect,omitempty"`
+	Update     []*ClassMethodsUpdateConnectionInput `json:"update,omitempty"`
+	Delete     []*ClassMethodsDeleteFieldInput      `json:"delete,omitempty"`
+}
+
+type ClassMethodsCreateFieldInput struct {
+	Node FunctionCreateInput `json:"node"`
+}
+
+type ClassMethodsConnectFieldInput struct {
+	Where FunctionWhere `json:"where"`
+}
+
+type ClassMethodsDisconnectFieldInput struct {
+	Where FunctionWhere `json:"where"`
+}
+
+type ClassMethodsUpdateConnectionInput struct {
+	Where FunctionWhere        `json:"where"`
+	Node  *FunctionUpdateInput `json:"node,omitempty"`
+}
+
+type ClassMethodsDeleteFieldInput struct {
+	Where FunctionWhere `json:"where"`
+}
+
+type ClassInheritsConnection struct {
+	Edges      []*ClassInheritsEdge `json:"edges"`
+	TotalCount int                  `json:"totalCount"`
+	PageInfo   PageInfo             `json:"pageInfo"`
+}
+
+type ClassInheritsEdge struct {
+	Node   *Class `json:"node"`
+	Cursor string `json:"cursor"`
+}
+
+type ClassInheritsFieldInput struct {
+	Create  []*ClassInheritsCreateFieldInput  `json:"create,omitempty"`
+	Connect []*ClassInheritsConnectFieldInput `json:"connect,omitempty"`
+}
+
+type ClassInheritsUpdateFieldInput struct {
+	Create     []*ClassInheritsCreateFieldInput      `json:"create,omitempty"`
+	Connect    []*ClassInheritsConnectFieldInput     `json:"connect,omitempty"`
+	Disconnect []*ClassInheritsDisconnectFieldInput  `json:"disconnect,omitempty"`
+	Update     []*ClassInheritsUpdateConnectionInput `json:"update,omitempty"`
+	Delete     []*ClassInheritsDeleteFieldInput      `json:"delete,omitempty"`
+}
+
+type ClassInheritsCreateFieldInput struct {
 	Node ClassCreateInput `json:"node"`
 }
 
-type ModuleClassesConnectFieldInput struct {
+type ClassInheritsConnectFieldInput struct {
 	Where ClassWhere `json:"where"`
 }
 
-type ModuleClassesDisconnectFieldInput struct {
+type ClassInheritsDisconnectFieldInput struct {
 	Where ClassWhere `json:"where"`
 }
 
-type ModuleClassesUpdateConnectionInput struct {
+type ClassInheritsUpdateConnectionInput struct {
 	Where ClassWhere        `json:"where"`
 	Node  *ClassUpdateInput `json:"node,omitempty"`
 }
 
-type ModuleClassesDeleteFieldInput struct {
+type ClassInheritsDeleteFieldInput struct {
 	Where ClassWhere `json:"where"`
 }
 
-type ModuleDependsOnConnection struct {
-	Edges      []*ModuleDependsOnEdge `json:"edges"`
+type ClassInheritedByConnection struct {
+	Edges      []*ClassInheritedByEdge `json:"edges"`
+	TotalCount int                     `json:"totalCount"`
+	PageInfo   PageInfo                `json:"pageInfo"`
+}
+
+type ClassInheritedByEdge struct {
+	Node   *Class `json:"node"`
+	Cursor string `json:"cursor"`
+}
+
+type ClassInheritedByFieldInput struct {
+	Create  []*ClassInheritedByCreateFieldInput  `json:"create,omitempty"`
+	Connect []*ClassInheritedByConnectFieldInput `json:"connect,omitempty"`
+}
+
+type ClassInheritedByUpdateFieldInput struct {
+	Create     []*ClassInheritedByCreateFieldInput      `json:"create,omitempty"`
+	Connect    []*ClassInheritedByConnectFieldInput     `json:"connect,omitempty"`
+	Disconnect []*ClassInheritedByDisconnectFieldInput  `json:"disconnect,omitempty"`
+	Update     []*ClassInheritedByUpdateConnectionInput `json:"update,omitempty"`
+	Delete     []*ClassInheritedByDeleteFieldInput      `json:"delete,omitempty"`
+}
+
+type ClassInheritedByCreateFieldInput struct {
+	Node ClassCreateInput `json:"node"`
+}
+
+type ClassInheritedByConnectFieldInput struct {
+	Where ClassWhere `json:"where"`
+}
+
+type ClassInheritedByDisconnectFieldInput struct {
+	Where ClassWhere `json:"where"`
+}
+
+type ClassInheritedByUpdateConnectionInput struct {
+	Where ClassWhere        `json:"where"`
+	Node  *ClassUpdateInput `json:"node,omitempty"`
+}
+
+type ClassInheritedByDeleteFieldInput struct {
+	Where ClassWhere `json:"where"`
+}
+
+type ClassImplementsConnection struct {
+	Edges      []*ClassImplementsEdge `json:"edges"`
 	TotalCount int                    `json:"totalCount"`
 	PageInfo   PageInfo               `json:"pageInfo"`
 }
 
-type ModuleDependsOnEdge struct {
-	Node   *Module `json:"node"`
-	Cursor string  `json:"cursor"`
+type ClassImplementsEdge struct {
+	Node   *Class `json:"node"`
+	Cursor string `json:"cursor"`
 }
 
-type ModuleDependsOnFieldInput struct {
-	Create  []*ModuleDependsOnCreateFieldInput  `json:"create,omitempty"`
-	Connect []*ModuleDependsOnConnectFieldInput `json:"connect,omitempty"`
+type ClassImplementsFieldInput struct {
+	Create  []*ClassImplementsCreateFieldInput  `json:"create,omitempty"`
+	Connect []*ClassImplementsConnectFieldInput `json:"connect,omitempty"`
 }
 
-type ModuleDependsOnUpdateFieldInput struct {
-	Create     []*ModuleDependsOnCreateFieldInput      `json:"create,omitempty"`
-	Connect    []*ModuleDependsOnConnectFieldInput     `json:"connect,omitempty"`
-	Disconnect []*ModuleDependsOnDisconnectFieldInput  `json:"disconnect,omitempty"`
-	Update     []*ModuleDependsOnUpdateConnectionInput `json:"update,omitempty"`
-	Delete     []*ModuleDependsOnDeleteFieldInput      `json:"delete,omitempty"`
+type ClassImplementsUpdateFieldInput struct {
+	Create     []*ClassImplementsCreateFieldInput      `json:"create,omitempty"`
+	Connect    []*ClassImplementsConnectFieldInput     `json:"connect,omitempty"`
+	Disconnect []*ClassImplementsDisconnectFieldInput  `json:"disconnect,omitempty"`
+	Update     []*ClassImplementsUpdateConnectionInput `json:"update,omitempty"`
+	Delete     []*ClassImplementsDeleteFieldInput      `json:"delete,omitempty"`
 }
 
-type ModuleDependsOnCreateFieldInput struct {
-	Node ModuleCreateInput `json:"node"`
+type ClassImplementsCreateFieldInput struct {
+	Node ClassCreateInput `json:"node"`
 }
 
-type ModuleDependsOnConnectFieldInput struct {
-	Where ModuleWhere `json:"where"`
+type ClassImplementsConnectFieldInput struct {
+	Where ClassWhere `json:"where"`
 }
 
-type ModuleDependsOnDisconnectFieldInput struct {
-	Where ModuleWhere `json:"where"`
+type ClassImplementsDisconnectFieldInput struct {
+	Where ClassWhere `json:"where"`
 }
 
-type ModuleDependsOnUpdateConnectionInput struct {
-	Where ModuleWhere        `json:"where"`
-	Node  *ModuleUpdateInput `json:"node,omitempty"`
+type ClassImplementsUpdateConnectionInput struct {
+	Where ClassWhere        `json:"where"`
+	Node  *ClassUpdateInput `json:"node,omitempty"`
 }
 
-type ModuleDependsOnDeleteFieldInput struct {
-	Where ModuleWhere `json:"where"`
+type ClassImplementsDeleteFieldInput struct {
+	Where ClassWhere `json:"where"`
 }
 
-type ModuleDependedOnByConnection struct {
-	Edges      []*ModuleDependedOnByEdge `json:"edges"`
+type ClassImplementedByConnection struct {
+	Edges      []*ClassImplementedByEdge `json:"edges"`
 	TotalCount int                       `json:"totalCount"`
 	PageInfo   PageInfo                  `json:"pageInfo"`
 }
 
-type ModuleDependedOnByEdge struct {
-	Node   *Module `json:"node"`
-	Cursor string  `json:"cursor"`
+type ClassImplementedByEdge struct {
+	Node   *Class `json:"node"`
+	Cursor string `json:"cursor"`
 }
 
-type ModuleDependedOnByFieldInput struct {
-	Create  []*ModuleDependedOnByCreateFieldInput  `json:"create,omitempty"`
-	Connect []*ModuleDependedOnByConnectFieldInput `json:"connect,omitempty"`
+type ClassImplementedByFieldInput struct {
+	Create  []*ClassImplementedByCreateFieldInput  `json:"create,omitempty"`
+	Connect []*ClassImplementedByConnectFieldInput `json:"connect,omitempty"`
 }
 
-type ModuleDependedOnByUpdateFieldInput struct {
-	Create     []*ModuleDependedOnByCreateFieldInput      `json:"create,omitempty"`
-	Connect    []*ModuleDependedOnByConnectFieldInput     `json:"connect,omitempty"`
-	Disconnect []*ModuleDependedOnByDisconnectFieldInput  `json:"disconnect,omitempty"`
-	Update     []*ModuleDependedOnByUpdateConnectionInput `json:"update,omitempty"`
-	Delete     []*ModuleDependedOnByDeleteFieldInput      `json:"delete,omitempty"`
+type ClassImplementedByUpdateFieldInput struct {
+	Create     []*ClassImplementedByCreateFieldInput      `json:"create,omitempty"`
+	Connect    []*ClassImplementedByConnectFieldInput     `json:"connect,omitempty"`
+	Disconnect []*ClassImplementedByDisconnectFieldInput  `json:"disconnect,omitempty"`
+	Update     []*ClassImplementedByUpdateConnectionInput `json:"update,omitempty"`
+	Delete     []*ClassImplementedByDeleteFieldInput      `json:"delete,omitempty"`
 }
 
-type ModuleDependedOnByCreateFieldInput struct {
-	Node ModuleCreateInput `json:"node"`
+type ClassImplementedByCreateFieldInput struct {
+	Node ClassCreateInput `json:"node"`
 }
 
-type ModuleDependedOnByConnectFieldInput struct {
-	Where ModuleWhere `json:"where"`
+type ClassImplementedByConnectFieldInput struct {
+	Where ClassWhere `json:"where"`
 }
 
-type ModuleDependedOnByDisconnectFieldInput struct {
-	Where ModuleWhere `json:"where"`
+type ClassImplementedByDisconnectFieldInput struct {
+	Where ClassWhere `json:"where"`
 }
 
-type ModuleDependedOnByUpdateConnectionInput struct {
-	Where ModuleWhere        `json:"where"`
-	Node  *ModuleUpdateInput `json:"node,omitempty"`
+type ClassImplementedByUpdateConnectionInput struct {
+	Where ClassWhere        `json:"where"`
+	Node  *ClassUpdateInput `json:"node,omitempty"`
 }
 
-type ModuleDependedOnByDeleteFieldInput struct {
-	Where ModuleWhere `json:"where"`
+type ClassImplementedByDeleteFieldInput struct {
+	Where ClassWhere `json:"where"`
 }
 
-type ModuleImportedByConnection struct {
-	Edges      []*ModuleImportedByEdge `json:"edges"`
-	TotalCount int                     `json:"totalCount"`
-	PageInfo   PageInfo                `json:"pageInfo"`
+type ClassDefinedInConnection struct {
+	Edges      []*ClassDefinedInEdge `json:"edges"`
+	TotalCount int                   `json:"totalCount"`
+	PageInfo   PageInfo              `json:"pageInfo"`
 }
 
-type ModuleImportedByEdge struct {
+type ClassDefinedInEdge struct {
 	Node   *File  `json:"node"`
 	Cursor string `json:"cursor"`
 }
 
-type ModuleImportedByFieldInput struct {
-	Create  []*ModuleImportedByCreateFieldInput  `json:"create,omitempty"`
-	Connect []*ModuleImportedByConnectFieldInput `json:"connect,omitempty"`
+type ClassDefinedInFieldInput struct {
+	Create  []*ClassDefinedInCreateFieldInput  `json:"create,omitempty"`
+	Connect []*ClassDefinedInConnectFieldInput `json:"connect,omitempty"`
 }
 
-type ModuleImportedByUpdateFieldInput struct {
-	Create     []*ModuleImportedByCreateFieldInput      `json:"create,omitempty"`
-	Connect    []*ModuleImportedByConnectFieldInput     `json:"connect,omitempty"`
-	Disconnect []*ModuleImportedByDisconnectFieldInput  `json:"disconnect,omitempty"`
-	Update     []*ModuleImportedByUpdateConnectionInput `json:"update,omitempty"`
-	Delete     []*ModuleImportedByDeleteFieldInput      `json:"delete,omitempty"`
+type ClassDefinedInUpdateFieldInput struct {
+	Create     []*ClassDefinedInCreateFieldInput      `json:"create,omitempty"`
+	Connect    []*ClassDefinedInConnectFieldInput     `json:"connect,omitempty"`
+	Disconnect []*ClassDefinedInDisconnectFieldInput  `json:"disconnect,omitempty"`
+	Update     []*ClassDefinedInUpdateConnectionInput `json:"update,omitempty"`
+	Delete     []*ClassDefinedInDeleteFieldInput      `json:"delete,omitempty"`
 }
 
-type ModuleImportedByCreateFieldInput struct {
+type ClassDefinedInCreateFieldInput struct {
 	Node FileCreateInput `json:"node"`
 }
 
-type ModuleImportedByConnectFieldInput struct {
+type ClassDefinedInConnectFieldInput struct {
 	Where FileWhere `json:"where"`
 }
 
-type ModuleImportedByDisconnectFieldInput struct {
+type ClassDefinedInDisconnectFieldInput struct {
 	Where FileWhere `json:"where"`
 }
 
-type ModuleImportedByUpdateConnectionInput struct {
+type ClassDefinedInUpdateConnectionInput struct {
 	Where FileWhere        `json:"where"`
 	Node  *FileUpdateInput `json:"node,omitempty"`
 }
 
-type ModuleImportedByDeleteFieldInput struct {
+type ClassDefinedInDeleteFieldInput struct {
 	Where FileWhere `json:"where"`
 }
 
-type ModuleRepositoryConnection struct {
-	Edges      []*ModuleRepositoryEdge `json:"edges"`
-	TotalCount int                     `json:"totalCount"`
-	PageInfo   PageInfo                `json:"pageInfo"`
+type ClassModuleConnection struct {
+	Edges      []*ClassModuleEdge `json:"edges"`
+	TotalCount int                `json:"totalCount"`
+	PageInfo   PageInfo           `json:"pageInfo"`
 }
 
-type ModuleRepositoryEdge struct {
+type ClassModuleEdge struct {
+	Node   *Module `json:"node"`
+	Cursor string  `json:"cursor"`
+}
+
+type ClassModuleFieldInput struct {
+	Create  []*ClassModuleCreateFieldInput  `json:"create,omitempty"`
+	Connect []*ClassModuleConnectFieldInput `json:"connect,omitempty"`
+}
+
+type ClassModuleUpdateFieldInput struct {
+	Create     []*ClassModuleCreateFieldInput      `json:"create,omitempty"`
+	Connect    []*ClassModuleConnectFieldInput     `json:"connect,omitempty"`
+	Disconnect []*ClassModuleDisconnectFieldInput  `json:"disconnect,omitempty"`
+	Update     []*ClassModuleUpdateConnectionInput `json:"update,omitempty"`
+	Delete     []*ClassModuleDeleteFieldInput      `json:"delete,omitempty"`
+}
+
+type ClassModuleCreateFieldInput struct {
+	Node ModuleCreateInput `json:"node"`
+}
+
+type ClassModuleConnectFieldInput struct {
+	Where ModuleWhere `json:"where"`
+}
+
+type ClassModuleDisconnectFieldInput struct {
+	Where ModuleWhere `json:"where"`
+}
+
+type ClassModuleUpdateConnectionInput struct {
+	Where ModuleWhere        `json:"where"`
+	Node  *ModuleUpdateInput `json:"node,omitempty"`
+}
+
+type ClassModuleDeleteFieldInput struct {
+	Where ModuleWhere `json:"where"`
+}
+
+type ClassRepositoryConnection struct {
+	Edges      []*ClassRepositoryEdge `json:"edges"`
+	TotalCount int                    `json:"totalCount"`
+	PageInfo   PageInfo               `json:"pageInfo"`
+}
+
+type ClassRepositoryEdge struct {
 	Node   *Repository `json:"node"`
 	Cursor string      `json:"cursor"`
 }
 
-type ModuleRepositoryFieldInput struct {
-	Create  []*ModuleRepositoryCreateFieldInput  `json:"create,omitempty"`
-	Connect []*ModuleRepositoryConnectFieldInput `json:"connect,omitempty"`
+type ClassRepositoryFieldInput struct {
+	Create  []*ClassRepositoryCreateFieldInput  `json:"create,omitempty"`
+	Connect []*ClassRepositoryConnectFieldInput `json:"connect,omitempty"`
 }
 
-type ModuleRepositoryUpdateFieldInput struct {
-	Create     []*ModuleRepositoryCreateFieldInput      `json:"create,omitempty"`
-	Connect    []*ModuleRepositoryConnectFieldInput     `json:"connect,omitempty"`
-	Disconnect []*ModuleRepositoryDisconnectFieldInput  `json:"disconnect,omitempty"`
-	Update     []*ModuleRepositoryUpdateConnectionInput `json:"update,omitempty"`
-	Delete     []*ModuleRepositoryDeleteFieldInput      `json:"delete,omitempty"`
+type ClassRepositoryUpdateFieldInput struct {
+	Create     []*ClassRepositoryCreateFieldInput      `json:"create,omitempty"`
+	Connect    []*ClassRepositoryConnectFieldInput     `json:"connect,omitempty"`
+	Disconnect []*ClassRepositoryDisconnectFieldInput  `json:"disconnect,omitempty"`
+	Update     []*ClassRepositoryUpdateConnectionInput `json:"update,omitempty"`
+	Delete     []*ClassRepositoryDeleteFieldInput      `json:"delete,omitempty"`
 }
 
-type ModuleRepositoryCreateFieldInput struct {
+type ClassRepositoryCreateFieldInput struct {
 	Node RepositoryCreateInput `json:"node"`
 }
 
-type ModuleRepositoryConnectFieldInput struct {
+type ClassRepositoryConnectFieldInput struct {
 	Where RepositoryWhere `json:"where"`
 }
 
-type ModuleRepositoryDisconnectFieldInput struct {
+type ClassRepositoryDisconnectFieldInput struct {
 	Where RepositoryWhere `json:"where"`
 }
 
-type ModuleRepositoryUpdateConnectionInput struct {
+type ClassRepositoryUpdateConnectionInput struct {
 	Where RepositoryWhere        `json:"where"`
 	Node  *RepositoryUpdateInput `json:"node,omitempty"`
 }
 
-type ModuleRepositoryDeleteFieldInput struct {
+type ClassRepositoryDeleteFieldInput struct {
 	Where RepositoryWhere `json:"where"`
 }
 
@@ -2261,262 +2517,6 @@ type FunctionRepositoryDeleteFieldInput struct {
 	Where RepositoryWhere `json:"where"`
 }
 
-type Repository struct {
-	Id              string    `json:"id"`
-	Name            string    `json:"name"`
-	Path            *string   `json:"path,omitempty"`
-	RemoteUrl       *string   `json:"remoteUrl,omitempty"`
-	PrimaryLanguage *string   `json:"primaryLanguage,omitempty"`
-	LastIndexed     DateTime  `json:"lastIndexed"`
-	Folders         []*Folder `json:"folders,omitempty"`
-	Files           []*File   `json:"files,omitempty"`
-	Modules         []*Module `json:"modules,omitempty"`
-}
-
-type RepositoryCreateInput struct {
-	Name            string   `json:"name"`
-	Path            *string  `json:"path,omitempty"`
-	RemoteUrl       *string  `json:"remoteUrl,omitempty"`
-	PrimaryLanguage *string  `json:"primaryLanguage,omitempty"`
-	LastIndexed     DateTime `json:"lastIndexed"`
-}
-
-type RepositoryUpdateInput struct {
-	Name            *string   `json:"name,omitempty"`
-	Path            *string   `json:"path,omitempty"`
-	RemoteUrl       *string   `json:"remoteUrl,omitempty"`
-	PrimaryLanguage *string   `json:"primaryLanguage,omitempty"`
-	LastIndexed     *DateTime `json:"lastIndexed,omitempty"`
-}
-
-type RepositoryWhere struct {
-	Id                        *string            `json:"id,omitempty"`
-	IdNot                     *string            `json:"id_NOT,omitempty"`
-	IdIn                      []string           `json:"id_IN,omitempty"`
-	IdNotIn                   []string           `json:"id_NOT_IN,omitempty"`
-	IdContains                *string            `json:"id_CONTAINS,omitempty"`
-	IdStartsWith              *string            `json:"id_STARTS_WITH,omitempty"`
-	IdEndsWith                *string            `json:"id_ENDS_WITH,omitempty"`
-	Name                      *string            `json:"name,omitempty"`
-	NameNot                   *string            `json:"name_NOT,omitempty"`
-	NameIn                    []string           `json:"name_IN,omitempty"`
-	NameNotIn                 []string           `json:"name_NOT_IN,omitempty"`
-	NameGt                    *string            `json:"name_GT,omitempty"`
-	NameGte                   *string            `json:"name_GTE,omitempty"`
-	NameLt                    *string            `json:"name_LT,omitempty"`
-	NameLte                   *string            `json:"name_LTE,omitempty"`
-	NameContains              *string            `json:"name_CONTAINS,omitempty"`
-	NameStartsWith            *string            `json:"name_STARTS_WITH,omitempty"`
-	NameEndsWith              *string            `json:"name_ENDS_WITH,omitempty"`
-	Path                      *string            `json:"path,omitempty"`
-	PathNot                   *string            `json:"path_NOT,omitempty"`
-	PathIn                    []string           `json:"path_IN,omitempty"`
-	PathNotIn                 []string           `json:"path_NOT_IN,omitempty"`
-	PathGt                    *string            `json:"path_GT,omitempty"`
-	PathGte                   *string            `json:"path_GTE,omitempty"`
-	PathLt                    *string            `json:"path_LT,omitempty"`
-	PathLte                   *string            `json:"path_LTE,omitempty"`
-	PathContains              *string            `json:"path_CONTAINS,omitempty"`
-	PathStartsWith            *string            `json:"path_STARTS_WITH,omitempty"`
-	PathEndsWith              *string            `json:"path_ENDS_WITH,omitempty"`
-	RemoteUrl                 *string            `json:"remoteUrl,omitempty"`
-	RemoteUrlNot              *string            `json:"remoteUrl_NOT,omitempty"`
-	RemoteUrlIn               []string           `json:"remoteUrl_IN,omitempty"`
-	RemoteUrlNotIn            []string           `json:"remoteUrl_NOT_IN,omitempty"`
-	RemoteUrlGt               *string            `json:"remoteUrl_GT,omitempty"`
-	RemoteUrlGte              *string            `json:"remoteUrl_GTE,omitempty"`
-	RemoteUrlLt               *string            `json:"remoteUrl_LT,omitempty"`
-	RemoteUrlLte              *string            `json:"remoteUrl_LTE,omitempty"`
-	RemoteUrlContains         *string            `json:"remoteUrl_CONTAINS,omitempty"`
-	RemoteUrlStartsWith       *string            `json:"remoteUrl_STARTS_WITH,omitempty"`
-	RemoteUrlEndsWith         *string            `json:"remoteUrl_ENDS_WITH,omitempty"`
-	PrimaryLanguage           *string            `json:"primaryLanguage,omitempty"`
-	PrimaryLanguageNot        *string            `json:"primaryLanguage_NOT,omitempty"`
-	PrimaryLanguageIn         []string           `json:"primaryLanguage_IN,omitempty"`
-	PrimaryLanguageNotIn      []string           `json:"primaryLanguage_NOT_IN,omitempty"`
-	PrimaryLanguageGt         *string            `json:"primaryLanguage_GT,omitempty"`
-	PrimaryLanguageGte        *string            `json:"primaryLanguage_GTE,omitempty"`
-	PrimaryLanguageLt         *string            `json:"primaryLanguage_LT,omitempty"`
-	PrimaryLanguageLte        *string            `json:"primaryLanguage_LTE,omitempty"`
-	PrimaryLanguageContains   *string            `json:"primaryLanguage_CONTAINS,omitempty"`
-	PrimaryLanguageStartsWith *string            `json:"primaryLanguage_STARTS_WITH,omitempty"`
-	PrimaryLanguageEndsWith   *string            `json:"primaryLanguage_ENDS_WITH,omitempty"`
-	LastIndexed               *DateTime          `json:"lastIndexed,omitempty"`
-	LastIndexedNot            *DateTime          `json:"lastIndexed_NOT,omitempty"`
-	LastIndexedIn             []DateTime         `json:"lastIndexed_IN,omitempty"`
-	LastIndexedNotIn          []DateTime         `json:"lastIndexed_NOT_IN,omitempty"`
-	LastIndexedGt             *DateTime          `json:"lastIndexed_GT,omitempty"`
-	LastIndexedGte            *DateTime          `json:"lastIndexed_GTE,omitempty"`
-	LastIndexedLt             *DateTime          `json:"lastIndexed_LT,omitempty"`
-	LastIndexedLte            *DateTime          `json:"lastIndexed_LTE,omitempty"`
-	AND                       []*RepositoryWhere `json:"AND,omitempty"`
-	OR                        []*RepositoryWhere `json:"OR,omitempty"`
-	NOT                       *RepositoryWhere   `json:"NOT,omitempty"`
-}
-
-type RepositorySort struct {
-	Id              *SortDirection `json:"id,omitempty"`
-	Name            *SortDirection `json:"name,omitempty"`
-	Path            *SortDirection `json:"path,omitempty"`
-	RemoteUrl       *SortDirection `json:"remoteUrl,omitempty"`
-	PrimaryLanguage *SortDirection `json:"primaryLanguage,omitempty"`
-	LastIndexed     *SortDirection `json:"lastIndexed,omitempty"`
-}
-
-type RepositorysConnection struct {
-	Edges      []*RepositoryEdge `json:"edges"`
-	TotalCount int               `json:"totalCount"`
-	PageInfo   PageInfo          `json:"pageInfo"`
-}
-
-type RepositoryEdge struct {
-	Node   *Repository `json:"node"`
-	Cursor string      `json:"cursor"`
-}
-
-type CreateRepositorysMutationResponse struct {
-	Repositorys []*Repository `json:"repositorys"`
-}
-
-type UpdateRepositorysMutationResponse struct {
-	Repositorys []*Repository `json:"repositorys"`
-}
-
-type RepositoryFoldersConnection struct {
-	Edges      []*RepositoryFoldersEdge `json:"edges"`
-	TotalCount int                      `json:"totalCount"`
-	PageInfo   PageInfo                 `json:"pageInfo"`
-}
-
-type RepositoryFoldersEdge struct {
-	Node   *Folder `json:"node"`
-	Cursor string  `json:"cursor"`
-}
-
-type RepositoryFoldersFieldInput struct {
-	Create  []*RepositoryFoldersCreateFieldInput  `json:"create,omitempty"`
-	Connect []*RepositoryFoldersConnectFieldInput `json:"connect,omitempty"`
-}
-
-type RepositoryFoldersUpdateFieldInput struct {
-	Create     []*RepositoryFoldersCreateFieldInput      `json:"create,omitempty"`
-	Connect    []*RepositoryFoldersConnectFieldInput     `json:"connect,omitempty"`
-	Disconnect []*RepositoryFoldersDisconnectFieldInput  `json:"disconnect,omitempty"`
-	Update     []*RepositoryFoldersUpdateConnectionInput `json:"update,omitempty"`
-	Delete     []*RepositoryFoldersDeleteFieldInput      `json:"delete,omitempty"`
-}
-
-type RepositoryFoldersCreateFieldInput struct {
-	Node FolderCreateInput `json:"node"`
-}
-
-type RepositoryFoldersConnectFieldInput struct {
-	Where FolderWhere `json:"where"`
-}
-
-type RepositoryFoldersDisconnectFieldInput struct {
-	Where FolderWhere `json:"where"`
-}
-
-type RepositoryFoldersUpdateConnectionInput struct {
-	Where FolderWhere        `json:"where"`
-	Node  *FolderUpdateInput `json:"node,omitempty"`
-}
-
-type RepositoryFoldersDeleteFieldInput struct {
-	Where FolderWhere `json:"where"`
-}
-
-type RepositoryFilesConnection struct {
-	Edges      []*RepositoryFilesEdge `json:"edges"`
-	TotalCount int                    `json:"totalCount"`
-	PageInfo   PageInfo               `json:"pageInfo"`
-}
-
-type RepositoryFilesEdge struct {
-	Node   *File  `json:"node"`
-	Cursor string `json:"cursor"`
-}
-
-type RepositoryFilesFieldInput struct {
-	Create  []*RepositoryFilesCreateFieldInput  `json:"create,omitempty"`
-	Connect []*RepositoryFilesConnectFieldInput `json:"connect,omitempty"`
-}
-
-type RepositoryFilesUpdateFieldInput struct {
-	Create     []*RepositoryFilesCreateFieldInput      `json:"create,omitempty"`
-	Connect    []*RepositoryFilesConnectFieldInput     `json:"connect,omitempty"`
-	Disconnect []*RepositoryFilesDisconnectFieldInput  `json:"disconnect,omitempty"`
-	Update     []*RepositoryFilesUpdateConnectionInput `json:"update,omitempty"`
-	Delete     []*RepositoryFilesDeleteFieldInput      `json:"delete,omitempty"`
-}
-
-type RepositoryFilesCreateFieldInput struct {
-	Node FileCreateInput `json:"node"`
-}
-
-type RepositoryFilesConnectFieldInput struct {
-	Where FileWhere `json:"where"`
-}
-
-type RepositoryFilesDisconnectFieldInput struct {
-	Where FileWhere `json:"where"`
-}
-
-type RepositoryFilesUpdateConnectionInput struct {
-	Where FileWhere        `json:"where"`
-	Node  *FileUpdateInput `json:"node,omitempty"`
-}
-
-type RepositoryFilesDeleteFieldInput struct {
-	Where FileWhere `json:"where"`
-}
-
-type RepositoryModulesConnection struct {
-	Edges      []*RepositoryModulesEdge `json:"edges"`
-	TotalCount int                      `json:"totalCount"`
-	PageInfo   PageInfo                 `json:"pageInfo"`
-}
-
-type RepositoryModulesEdge struct {
-	Node   *Module `json:"node"`
-	Cursor string  `json:"cursor"`
-}
-
-type RepositoryModulesFieldInput struct {
-	Create  []*RepositoryModulesCreateFieldInput  `json:"create,omitempty"`
-	Connect []*RepositoryModulesConnectFieldInput `json:"connect,omitempty"`
-}
-
-type RepositoryModulesUpdateFieldInput struct {
-	Create     []*RepositoryModulesCreateFieldInput      `json:"create,omitempty"`
-	Connect    []*RepositoryModulesConnectFieldInput     `json:"connect,omitempty"`
-	Disconnect []*RepositoryModulesDisconnectFieldInput  `json:"disconnect,omitempty"`
-	Update     []*RepositoryModulesUpdateConnectionInput `json:"update,omitempty"`
-	Delete     []*RepositoryModulesDeleteFieldInput      `json:"delete,omitempty"`
-}
-
-type RepositoryModulesCreateFieldInput struct {
-	Node ModuleCreateInput `json:"node"`
-}
-
-type RepositoryModulesConnectFieldInput struct {
-	Where ModuleWhere `json:"where"`
-}
-
-type RepositoryModulesDisconnectFieldInput struct {
-	Where ModuleWhere `json:"where"`
-}
-
-type RepositoryModulesUpdateConnectionInput struct {
-	Where ModuleWhere        `json:"where"`
-	Node  *ModuleUpdateInput `json:"node,omitempty"`
-}
-
-type RepositoryModulesDeleteFieldInput struct {
-	Where ModuleWhere `json:"where"`
-}
-
 type ExternalReference struct {
 	Id         string        `json:"id"`
 	Name       string        `json:"name"`
@@ -2639,26 +2639,43 @@ type ExternalReferenceRepositoryDeleteFieldInput struct {
 	Where RepositoryWhere `json:"where"`
 }
 
-type ClassMatchInput struct {
-	Name         *string  `json:"name,omitempty"`
-	Path         *string  `json:"path,omitempty"`
-	Language     *string  `json:"language,omitempty"`
-	Kind         *string  `json:"kind,omitempty"`
-	Visibility   *string  `json:"visibility,omitempty"`
-	Source       *string  `json:"source,omitempty"`
-	StartingLine *int     `json:"startingLine,omitempty"`
-	EndingLine   *int     `json:"endingLine,omitempty"`
-	Decorators   []string `json:"decorators,omitempty"`
+type RepositoryMatchInput struct {
+	Name            *string   `json:"name,omitempty"`
+	Path            *string   `json:"path,omitempty"`
+	RemoteUrl       *string   `json:"remoteUrl,omitempty"`
+	PrimaryLanguage *string   `json:"primaryLanguage,omitempty"`
+	LastIndexed     *DateTime `json:"lastIndexed,omitempty"`
 }
 
-type ClassMergeInput struct {
-	Match    *ClassMatchInput  `json:"match"`
-	OnCreate *ClassCreateInput `json:"onCreate,omitempty"`
-	OnMatch  *ClassUpdateInput `json:"onMatch,omitempty"`
+type RepositoryMergeInput struct {
+	Match    *RepositoryMatchInput  `json:"match"`
+	OnCreate *RepositoryCreateInput `json:"onCreate,omitempty"`
+	OnMatch  *RepositoryUpdateInput `json:"onMatch,omitempty"`
 }
 
-type MergeClasssMutationResponse struct {
-	Classs []*Class `json:"classs"`
+type MergeRepositorysMutationResponse struct {
+	Repositorys []*Repository `json:"repositorys"`
+}
+
+type ModuleMatchInput struct {
+	Name         *string `json:"name,omitempty"`
+	Path         *string `json:"path,omitempty"`
+	Language     *string `json:"language,omitempty"`
+	ImportPath   *string `json:"importPath,omitempty"`
+	Visibility   *string `json:"visibility,omitempty"`
+	Kind         *string `json:"kind,omitempty"`
+	StartingLine *int    `json:"startingLine,omitempty"`
+	EndingLine   *int    `json:"endingLine,omitempty"`
+}
+
+type ModuleMergeInput struct {
+	Match    *ModuleMatchInput  `json:"match"`
+	OnCreate *ModuleCreateInput `json:"onCreate,omitempty"`
+	OnMatch  *ModuleUpdateInput `json:"onMatch,omitempty"`
+}
+
+type MergeModulesMutationResponse struct {
+	Modules []*Module `json:"modules"`
 }
 
 type FolderMatchInput struct {
@@ -2694,25 +2711,26 @@ type MergeFilesMutationResponse struct {
 	Files []*File `json:"files"`
 }
 
-type ModuleMatchInput struct {
-	Name         *string `json:"name,omitempty"`
-	Path         *string `json:"path,omitempty"`
-	Language     *string `json:"language,omitempty"`
-	ImportPath   *string `json:"importPath,omitempty"`
-	Visibility   *string `json:"visibility,omitempty"`
-	Kind         *string `json:"kind,omitempty"`
-	StartingLine *int    `json:"startingLine,omitempty"`
-	EndingLine   *int    `json:"endingLine,omitempty"`
+type ClassMatchInput struct {
+	Name         *string  `json:"name,omitempty"`
+	Path         *string  `json:"path,omitempty"`
+	Language     *string  `json:"language,omitempty"`
+	Kind         *string  `json:"kind,omitempty"`
+	Visibility   *string  `json:"visibility,omitempty"`
+	Source       *string  `json:"source,omitempty"`
+	StartingLine *int     `json:"startingLine,omitempty"`
+	EndingLine   *int     `json:"endingLine,omitempty"`
+	Decorators   []string `json:"decorators,omitempty"`
 }
 
-type ModuleMergeInput struct {
-	Match    *ModuleMatchInput  `json:"match"`
-	OnCreate *ModuleCreateInput `json:"onCreate,omitempty"`
-	OnMatch  *ModuleUpdateInput `json:"onMatch,omitempty"`
+type ClassMergeInput struct {
+	Match    *ClassMatchInput  `json:"match"`
+	OnCreate *ClassCreateInput `json:"onCreate,omitempty"`
+	OnMatch  *ClassUpdateInput `json:"onMatch,omitempty"`
 }
 
-type MergeModulesMutationResponse struct {
-	Modules []*Module `json:"modules"`
+type MergeClasssMutationResponse struct {
+	Classs []*Class `json:"classs"`
 }
 
 type FunctionMatchInput struct {
@@ -2738,24 +2756,6 @@ type MergeFunctionsMutationResponse struct {
 	Functions []*Function `json:"functions"`
 }
 
-type RepositoryMatchInput struct {
-	Name            *string   `json:"name,omitempty"`
-	Path            *string   `json:"path,omitempty"`
-	RemoteUrl       *string   `json:"remoteUrl,omitempty"`
-	PrimaryLanguage *string   `json:"primaryLanguage,omitempty"`
-	LastIndexed     *DateTime `json:"lastIndexed,omitempty"`
-}
-
-type RepositoryMergeInput struct {
-	Match    *RepositoryMatchInput  `json:"match"`
-	OnCreate *RepositoryCreateInput `json:"onCreate,omitempty"`
-	OnMatch  *RepositoryUpdateInput `json:"onMatch,omitempty"`
-}
-
-type MergeRepositorysMutationResponse struct {
-	Repositorys []*Repository `json:"repositorys"`
-}
-
 type ExternalReferenceMatchInput struct {
 	Name       *string `json:"name,omitempty"`
 	ImportPath *string `json:"importPath,omitempty"`
@@ -2771,47 +2771,52 @@ type MergeExternalReferencesMutationResponse struct {
 	ExternalReferences []*ExternalReference `json:"externalReferences"`
 }
 
-type ConnectClassMethodsInput struct {
-	From *ClassWhere    `json:"from"`
-	To   *FunctionWhere `json:"to"`
+type ConnectRepositoryFoldersInput struct {
+	From *RepositoryWhere `json:"from"`
+	To   *FolderWhere     `json:"to"`
 }
 
 type ConnectInfo struct {
 	RelationshipsCreated int `json:"relationshipsCreated"`
 }
 
-type ConnectClassInheritsInput struct {
-	From *ClassWhere `json:"from"`
-	To   *ClassWhere `json:"to"`
+type ConnectRepositoryFilesInput struct {
+	From *RepositoryWhere `json:"from"`
+	To   *FileWhere       `json:"to"`
 }
 
-type ConnectClassInheritedByInput struct {
-	From *ClassWhere `json:"from"`
-	To   *ClassWhere `json:"to"`
+type ConnectRepositoryModulesInput struct {
+	From *RepositoryWhere `json:"from"`
+	To   *ModuleWhere     `json:"to"`
 }
 
-type ConnectClassImplementsInput struct {
-	From *ClassWhere `json:"from"`
-	To   *ClassWhere `json:"to"`
+type ConnectModuleFunctionsInput struct {
+	From *ModuleWhere   `json:"from"`
+	To   *FunctionWhere `json:"to"`
 }
 
-type ConnectClassImplementedByInput struct {
-	From *ClassWhere `json:"from"`
-	To   *ClassWhere `json:"to"`
+type ConnectModuleClassesInput struct {
+	From *ModuleWhere `json:"from"`
+	To   *ClassWhere  `json:"to"`
 }
 
-type ConnectClassDefinedInInput struct {
-	From *ClassWhere `json:"from"`
-	To   *FileWhere  `json:"to"`
-}
-
-type ConnectClassModuleInput struct {
-	From *ClassWhere  `json:"from"`
+type ConnectModuleDependsOnInput struct {
+	From *ModuleWhere `json:"from"`
 	To   *ModuleWhere `json:"to"`
 }
 
-type ConnectClassRepositoryInput struct {
-	From *ClassWhere      `json:"from"`
+type ConnectModuleDependedOnByInput struct {
+	From *ModuleWhere `json:"from"`
+	To   *ModuleWhere `json:"to"`
+}
+
+type ConnectModuleImportedByInput struct {
+	From *ModuleWhere `json:"from"`
+	To   *FileWhere   `json:"to"`
+}
+
+type ConnectModuleRepositoryInput struct {
+	From *ModuleWhere     `json:"from"`
 	To   *RepositoryWhere `json:"to"`
 }
 
@@ -2865,33 +2870,43 @@ type ConnectFileRepositoryInput struct {
 	To   *RepositoryWhere `json:"to"`
 }
 
-type ConnectModuleFunctionsInput struct {
-	From *ModuleWhere   `json:"from"`
+type ConnectClassMethodsInput struct {
+	From *ClassWhere    `json:"from"`
 	To   *FunctionWhere `json:"to"`
 }
 
-type ConnectModuleClassesInput struct {
-	From *ModuleWhere `json:"from"`
-	To   *ClassWhere  `json:"to"`
+type ConnectClassInheritsInput struct {
+	From *ClassWhere `json:"from"`
+	To   *ClassWhere `json:"to"`
 }
 
-type ConnectModuleDependsOnInput struct {
-	From *ModuleWhere `json:"from"`
+type ConnectClassInheritedByInput struct {
+	From *ClassWhere `json:"from"`
+	To   *ClassWhere `json:"to"`
+}
+
+type ConnectClassImplementsInput struct {
+	From *ClassWhere `json:"from"`
+	To   *ClassWhere `json:"to"`
+}
+
+type ConnectClassImplementedByInput struct {
+	From *ClassWhere `json:"from"`
+	To   *ClassWhere `json:"to"`
+}
+
+type ConnectClassDefinedInInput struct {
+	From *ClassWhere `json:"from"`
+	To   *FileWhere  `json:"to"`
+}
+
+type ConnectClassModuleInput struct {
+	From *ClassWhere  `json:"from"`
 	To   *ModuleWhere `json:"to"`
 }
 
-type ConnectModuleDependedOnByInput struct {
-	From *ModuleWhere `json:"from"`
-	To   *ModuleWhere `json:"to"`
-}
-
-type ConnectModuleImportedByInput struct {
-	From *ModuleWhere `json:"from"`
-	To   *FileWhere   `json:"to"`
-}
-
-type ConnectModuleRepositoryInput struct {
-	From *ModuleWhere     `json:"from"`
+type ConnectClassRepositoryInput struct {
+	From *ClassWhere      `json:"from"`
 	To   *RepositoryWhere `json:"to"`
 }
 
@@ -2940,21 +2955,6 @@ type ConnectFunctionModuleInput struct {
 type ConnectFunctionRepositoryInput struct {
 	From *FunctionWhere   `json:"from"`
 	To   *RepositoryWhere `json:"to"`
-}
-
-type ConnectRepositoryFoldersInput struct {
-	From *RepositoryWhere `json:"from"`
-	To   *FolderWhere     `json:"to"`
-}
-
-type ConnectRepositoryFilesInput struct {
-	From *RepositoryWhere `json:"from"`
-	To   *FileWhere       `json:"to"`
-}
-
-type ConnectRepositoryModulesInput struct {
-	From *RepositoryWhere `json:"from"`
-	To   *ModuleWhere     `json:"to"`
 }
 
 type ConnectExternalReferenceRepositoryInput struct {
