@@ -7,7 +7,7 @@ require (
 	github.com/mark3labs/mcp-go v0.44.1
 	github.com/sabhiram/go-gitignore v0.0.0-20210923224102-525f6e181f06
 	github.com/smacker/go-tree-sitter v0.0.0-20240827094217-dd81d9e9be82
-	github.com/tab58/go-ormql v0.0.0-00010101000000-000000000000
+	github.com/tab58/go-ormql v0.0.0-20260309040027-0fea8ec4b2de
 	github.com/testcontainers/testcontainers-go v0.40.0
 )
 
@@ -90,5 +90,3 @@ require (
 	golang.org/x/sys v0.41.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-replace github.com/tab58/go-ormql => ../go-ormql
