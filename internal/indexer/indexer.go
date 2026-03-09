@@ -346,14 +346,18 @@ func (idx *Indexer) IndexRepository(ctx context.Context, repoPath string, opts .
 
 	// Pass 1: Create nodes
 	if hasPersistence {
+		nodeStart := time.Now()
 		if err := idx.createNodes(ctx, c, wc.pendingFolders, wc.pendingFiles); err != nil {
 			return result, fmt.Errorf("indexer: %w", err)
 		}
+		log.Printf("[DEBUG] indexer createNodes: %d folders, %d files (%s)", len(wc.pendingFolders), len(wc.pendingFiles), time.Since(nodeStart))
 
 		// Pass 2: Create edges
+		edgeStart := time.Now()
 		if err := idx.createEdges(ctx, c, repoName, wc.pendingFolders, wc.pendingFiles); err != nil {
 			return result, fmt.Errorf("indexer: %w", err)
 		}
+		log.Printf("[DEBUG] indexer createEdges: (%s)", time.Since(edgeStart))
 	}
 
 	// Update in-memory index cache for incremental re-indexing
@@ -511,58 +515,71 @@ func (idx *Indexer) createNodes(ctx context.Context, c *client.Client, folders [
 	return nil
 }
 
-// createEdges creates CONTAINS and BELONGS_TO edges via raw Cypher MATCH+CREATE.
-// Uses individual statements instead of UNWIND+MERGE to avoid FalkorDB memory spikes.
+// indexerEdgeBatchSize is the number of edges per UNWIND batch for structural edges.
+const indexerEdgeBatchSize = 50
+
+// createEdges creates CONTAINS and BELONGS_TO edges via batched UNWIND Cypher.
+// Uses ExecuteRawBatch to reduce FalkorDB round-trips from N individual calls
+// to ceil(N/batchSize) batched UNWIND calls.
 func (idx *Indexer) createEdges(ctx context.Context, c *client.Client, repoName string, folders []pendingFolder, files []pendingFile) error {
 	if len(folders) == 0 && len(files) == 0 {
 		return nil
 	}
 
-	// Build raw Cypher queries for each edge type
-	repoContainsFolder := "MATCH (a:Repository {name: $from_name}) MATCH (b:Folder {path: $to_path}) CREATE (a)-[:CONTAINS]->(b)"
-	repoContainsFile := "MATCH (a:Repository {name: $from_name}) MATCH (b:File {path: $to_path}) CREATE (a)-[:CONTAINS]->(b)"
-	folderContainsFolder := "MATCH (a:Folder {path: $from_path}) MATCH (b:Folder {path: $to_path}) CREATE (a)-[:CONTAINS]->(b)"
-	folderContainsFile := "MATCH (a:Folder {path: $from_path}) MATCH (b:File {path: $to_path}) CREATE (a)-[:CONTAINS]->(b)"
-	folderBelongsToRepo := "MATCH (a:Folder {path: $from_path}) MATCH (b:Repository {name: $to_name}) CREATE (a)-[:BELONGS_TO]->(b)"
-	fileBelongsToRepo := "MATCH (a:File {path: $from_path}) MATCH (b:Repository {name: $to_name}) CREATE (a)-[:BELONGS_TO]->(b)"
+	// UNWIND-compatible Cypher queries (reference item.field instead of $field)
+	const repoContainsFolder = "MATCH (a:Repository {name: item.from_name}) MATCH (b:Folder {path: item.to_path}) MERGE (a)-[:CONTAINS]->(b)"
+	const repoContainsFile = "MATCH (a:Repository {name: item.from_name}) MATCH (b:File {path: item.to_path}) MERGE (a)-[:CONTAINS]->(b)"
+	const folderContainsFolder = "MATCH (a:Folder {path: item.from_path}) MATCH (b:Folder {path: item.to_path}) MERGE (a)-[:CONTAINS]->(b)"
+	const folderContainsFile = "MATCH (a:Folder {path: item.from_path}) MATCH (b:File {path: item.to_path}) MERGE (a)-[:CONTAINS]->(b)"
+	const folderBelongsToRepo = "MATCH (a:Folder {path: item.from_path}) MATCH (b:Repository {name: item.to_name}) MERGE (a)-[:BELONGS_TO]->(b)"
+	const fileBelongsToRepo = "MATCH (a:File {path: item.from_path}) MATCH (b:Repository {name: item.to_name}) MERGE (a)-[:BELONGS_TO]->(b)"
+
+	// Accumulate edge items by query type
+	var repoFolderItems, repoFileItems []map[string]any
+	var folderFolderItems, folderFileItems []map[string]any
+	var folderBelongsItems, fileBelongsItems []map[string]any
 
 	for _, f := range folders {
-		if err := ctx.Err(); err != nil {
-			return err
-		}
-		// CONTAINS edge: parent → folder
 		if f.ParentPath == "" {
-			if _, err := c.ExecuteRaw(ctx, repoContainsFolder, map[string]any{"from_name": repoName, "to_path": f.Path}); err != nil {
-				return fmt.Errorf("indexer: createEdges repo->folder: %w", err)
-			}
+			repoFolderItems = append(repoFolderItems, map[string]any{"from_name": repoName, "to_path": f.Path})
 		} else {
-			if _, err := c.ExecuteRaw(ctx, folderContainsFolder, map[string]any{"from_path": f.ParentPath, "to_path": f.Path}); err != nil {
-				return fmt.Errorf("indexer: createEdges folder->folder: %w", err)
-			}
+			folderFolderItems = append(folderFolderItems, map[string]any{"from_path": f.ParentPath, "to_path": f.Path})
 		}
-		// BELONGS_TO edge: folder → repo
-		if _, err := c.ExecuteRaw(ctx, folderBelongsToRepo, map[string]any{"from_path": f.Path, "to_name": repoName}); err != nil {
-			return fmt.Errorf("indexer: createEdges folder->repo: %w", err)
-		}
+		folderBelongsItems = append(folderBelongsItems, map[string]any{"from_path": f.Path, "to_name": repoName})
 	}
 
 	for _, f := range files {
-		if err := ctx.Err(); err != nil {
-			return err
-		}
-		// CONTAINS edge: parent → file
 		if f.ParentPath == "" {
-			if _, err := c.ExecuteRaw(ctx, repoContainsFile, map[string]any{"from_name": repoName, "to_path": f.Path}); err != nil {
-				return fmt.Errorf("indexer: createEdges repo->file: %w", err)
-			}
+			repoFileItems = append(repoFileItems, map[string]any{"from_name": repoName, "to_path": f.Path})
 		} else {
-			if _, err := c.ExecuteRaw(ctx, folderContainsFile, map[string]any{"from_path": f.ParentPath, "to_path": f.Path}); err != nil {
-				return fmt.Errorf("indexer: createEdges folder->file: %w", err)
-			}
+			folderFileItems = append(folderFileItems, map[string]any{"from_path": f.ParentPath, "to_path": f.Path})
 		}
-		// BELONGS_TO edge: file → repo
-		if _, err := c.ExecuteRaw(ctx, fileBelongsToRepo, map[string]any{"from_path": f.Path, "to_name": repoName}); err != nil {
-			return fmt.Errorf("indexer: createEdges file->repo: %w", err)
+		fileBelongsItems = append(fileBelongsItems, map[string]any{"from_path": f.Path, "to_name": repoName})
+	}
+
+	log.Printf("[DEBUG] createEdges: repoFolders=%d folderFolders=%d repoFiles=%d folderFiles=%d folderBelongs=%d fileBelongs=%d",
+		len(repoFolderItems), len(folderFolderItems), len(repoFileItems), len(folderFileItems), len(folderBelongsItems), len(fileBelongsItems))
+
+	type edgeBatch struct {
+		query string
+		items []map[string]any
+		name  string
+	}
+	batches := []edgeBatch{
+		{repoContainsFolder, repoFolderItems, "repo->folder"},
+		{folderContainsFolder, folderFolderItems, "folder->folder"},
+		{repoContainsFile, repoFileItems, "repo->file"},
+		{folderContainsFile, folderFileItems, "folder->file"},
+		{folderBelongsToRepo, folderBelongsItems, "folder->repo"},
+		{fileBelongsToRepo, fileBelongsItems, "file->repo"},
+	}
+
+	for _, b := range batches {
+		if len(b.items) == 0 {
+			continue
+		}
+		if err := c.ExecuteRawBatch(ctx, b.query, b.items, indexerEdgeBatchSize); err != nil {
+			return fmt.Errorf("indexer: createEdges %s: %w", b.name, err)
 		}
 	}
 

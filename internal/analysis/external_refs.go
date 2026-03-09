@@ -3,6 +3,7 @@ package analysis
 import (
 	"context"
 	"fmt"
+	"path/filepath"
 
 	"github.com/tab58/go-ormql/pkg/client"
 )
@@ -28,7 +29,7 @@ const (
 
 // writeExternalReferences creates ExternalReference nodes and edges for all
 // external references found in the analyses. Deduplicates by name+importPath.
-func (a *Analyzer) writeExternalReferences(ctx context.Context, c *client.Client, repoID string, analyses []FileAnalysis) error {
+func (a *Analyzer) writeExternalReferences(ctx context.Context, c *client.Client, repoID string, repoPath string, analyses []FileAnalysis) error {
 	// Deduplicate external refs by name+importPath
 	type extRefKey struct{ name, importPath string }
 	seen := make(map[extRefKey]bool)
@@ -38,6 +39,9 @@ func (a *Analyzer) writeExternalReferences(ctx context.Context, c *client.Client
 	var callEdges []map[string]any
 
 	for _, fa := range analyses {
+		// File nodes use relative paths; compute for IMPORTS edge matching.
+		fileRelPath, _ := filepath.Rel(repoPath, fa.FilePath)
+
 		for _, ref := range fa.References {
 			if !ref.IsExternal {
 				continue
@@ -60,7 +64,7 @@ func (a *Analyzer) writeExternalReferences(ctx context.Context, c *client.Client
 			switch ref.Kind {
 			case "imports":
 				importEdges = append(importEdges, map[string]any{
-					"from": map[string]any{"path": ref.FilePath},
+					"from": map[string]any{"path": fileRelPath},
 					"to":   map[string]any{"name": ref.ToName, "importPath": ref.ExternalImportPath},
 				})
 			case "calls":

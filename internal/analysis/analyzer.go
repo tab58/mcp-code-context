@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	sitter "github.com/smacker/go-tree-sitter"
 	codedb "github.com/tab58/code-context/internal/clients/code_db"
@@ -183,15 +184,20 @@ func (a *Analyzer) Analyze(ctx context.Context, repoID string, repoPath string, 
 			return nil, fmt.Errorf("analyzer ForRepo(%s): %w", repoID, err)
 		}
 
-		if err := a.writePass1(ctx, c, repoID, allAnalyses); err != nil {
+		pass1Start := time.Now()
+		if err := a.writePass1(ctx, c, repoID, repoPath, allAnalyses); err != nil {
 			return nil, fmt.Errorf("analyzer pass 1 graph writes: %w", err)
 		}
+		log.Printf("[DEBUG] pass1 total: %s", time.Since(pass1Start))
+
 		// Write source code separately to avoid bloating MERGE queries.
 		// Source is inlined in the Redis command by the FalkorDB Go client,
 		// so including it in MERGE parameters causes massive query strings.
+		sourceStart := time.Now()
 		if err := a.writeSourceCode(ctx, c, allAnalyses); err != nil {
 			return nil, fmt.Errorf("analyzer source code writes: %w", err)
 		}
+		log.Printf("[DEBUG] writeSourceCode total: %s", time.Since(sourceStart))
 	}
 
 	// Pass 2: Build symbol table and resolve references
@@ -200,10 +206,12 @@ func (a *Analyzer) Analyze(ctx context.Context, repoID string, repoPath string, 
 
 	// Pass 2 graph writes: create relationship edges for resolved references
 	if a.db != nil {
-		if err := a.writePass2(ctx, c, allAnalyses); err != nil {
+		pass2Start := time.Now()
+		if err := a.writePass2(ctx, c, repoPath, allAnalyses); err != nil {
 			return nil, fmt.Errorf("analyzer pass 2 graph writes: %w", err)
 		}
-		if err := a.writeExternalReferences(ctx, c, repoID, allAnalyses); err != nil {
+		log.Printf("[DEBUG] pass2 edges total: %s", time.Since(pass2Start))
+		if err := a.writeExternalReferences(ctx, c, repoID, repoPath, allAnalyses); err != nil {
 			return nil, fmt.Errorf("analyzer external reference writes: %w", err)
 		}
 	}
@@ -365,13 +373,16 @@ func (a *Analyzer) analyzeFile(ctx context.Context, filePath string, repoPath st
 
 // writePass1 creates graph nodes for extracted symbols and structural edges
 // (DEFINES, HAS_METHOD, BELONGS_TO) via Client().Execute() merge/connect mutations.
-func (a *Analyzer) writePass1(ctx context.Context, c *client.Client, repoID string, analyses []FileAnalysis) error {
+func (a *Analyzer) writePass1(ctx context.Context, c *client.Client, repoID string, repoPath string, analyses []FileAnalysis) error {
 	var moduleInputs, funcInputs, classInputs []map[string]any
 	var defFuncEdges, defClassEdges []map[string]any
 	var methodEdges []map[string]any
 	var moduleBelongsTo, funcBelongsTo, classBelongsTo []map[string]any
 
 	for _, fa := range analyses {
+		// File nodes use relative paths; compute relative path for File matching.
+		fileRelPath, _ := filepath.Rel(repoPath, fa.FilePath)
+
 		for _, sym := range fa.Symbols {
 			switch sym.Kind {
 			case "module":
@@ -402,7 +413,7 @@ func (a *Analyzer) writePass1(ctx context.Context, c *client.Client, repoID stri
 					"onMatch":  fields,
 				})
 				defFuncEdges = append(defFuncEdges, map[string]any{
-					"from": map[string]any{"path": sym.Path},
+					"from": map[string]any{"path": fileRelPath},
 					"to":   map[string]any{"name": sym.Name, "path": sym.Path},
 				})
 				funcBelongsTo = append(funcBelongsTo, map[string]any{
@@ -424,7 +435,7 @@ func (a *Analyzer) writePass1(ctx context.Context, c *client.Client, repoID stri
 					"onMatch":  withKind(fields, sym.Kind),
 				})
 				defClassEdges = append(defClassEdges, map[string]any{
-					"from": map[string]any{"path": sym.Path},
+					"from": map[string]any{"path": fileRelPath},
 					"to":   map[string]any{"name": sym.Name, "path": sym.Path},
 				})
 				classBelongsTo = append(classBelongsTo, map[string]any{
@@ -439,20 +450,24 @@ func (a *Analyzer) writePass1(ctx context.Context, c *client.Client, repoID stri
 		len(moduleInputs), len(funcInputs), len(classInputs), len(defFuncEdges), len(defClassEdges), len(methodEdges))
 
 	// Merge nodes (small batches — source code in parameters)
+	mergeStart := time.Now()
 	if err := batchMutate(ctx, c, moduleInputs, gqlMergeModules, mergeBatchSize); err != nil {
 		return fmt.Errorf("mergeModules: %w", err)
 	}
-	log.Printf("[DEBUG] mergeModules complete")
+	log.Printf("[DEBUG] mergeModules complete (%d items, %s)", len(moduleInputs), time.Since(mergeStart))
+	funcStart := time.Now()
 	if err := batchMutate(ctx, c, funcInputs, gqlMergeFunctions, mergeBatchSize); err != nil {
 		return fmt.Errorf("mergeFunctions: %w", err)
 	}
-	log.Printf("[DEBUG] mergeFunctions complete")
+	log.Printf("[DEBUG] mergeFunctions complete (%d items, %s)", len(funcInputs), time.Since(funcStart))
+	classStart := time.Now()
 	if err := batchMutate(ctx, c, classInputs, gqlMergeClasss, mergeBatchSize); err != nil {
 		return fmt.Errorf("mergeClasss: %w", err)
 	}
-	log.Printf("[DEBUG] mergeClasss complete")
+	log.Printf("[DEBUG] mergeClasss complete (%d items, %s)", len(classInputs), time.Since(classStart))
 
-	// DEFINES edges — raw Cypher MATCH+CREATE (avoids UNWIND+MERGE memory spikes)
+	// DEFINES edges — batched UNWIND MATCH+CREATE
+	edgeStart := time.Now()
 	defFuncSpec := edgeSpec{
 		FromLabel: "File", FromWhere: map[string]string{"path": "from_path"},
 		ToLabel: "Function", ToWhere: map[string]string{"name": "to_name", "path": "to_path"},
@@ -505,6 +520,7 @@ func (a *Analyzer) writePass1(ctx context.Context, c *client.Client, repoID stri
 	if err := createEdgesRaw(ctx, c, classBelongsTo, classBelongsToSpec); err != nil {
 		return fmt.Errorf("connectClassRepository: %w", err)
 	}
+	log.Printf("[DEBUG] pass1 edges complete (%s)", time.Since(edgeStart))
 
 	return nil
 }
@@ -512,23 +528,35 @@ func (a *Analyzer) writePass1(ctx context.Context, c *client.Client, repoID stri
 // writePass2 creates relationship edges for resolved references
 // (CALLS, IMPORTS, INHERITS, IMPLEMENTS, OVERRIDES, DEPENDS_ON, EXPORTS)
 // via Client().Execute() connect mutations.
-func (a *Analyzer) writePass2(ctx context.Context, c *client.Client, analyses []FileAnalysis) error {
-	// Build symbol table for resolution checks
-	symbolTable := make(map[string]struct{})
+func (a *Analyzer) writePass2(ctx context.Context, c *client.Client, repoPath string, analyses []FileAnalysis) error {
+	// Build symbol count table: name -> count of symbols with that name.
+	// Names that appear more than once are ambiguous — creating edges to all
+	// matching targets produces a cartesian product (e.g., 32 "constructor"
+	// functions × 100 call sites = 3,200 spurious edges).
+	symbolCount := make(map[string]int)
 	for _, fa := range analyses {
 		for _, sym := range fa.Symbols {
-			symbolTable[sym.Name] = struct{}{}
+			symbolCount[sym.Name]++
 		}
 	}
 
 	var callEdges, importEdges []map[string]any
 	var inheritsEdges, implementsEdges, overridesEdges []map[string]any
 	var dependsOnEdges, exportEdges []map[string]any
+	skippedAmbiguous := 0
 
 	for _, fa := range analyses {
+		// File nodes use relative paths; compute for IMPORTS edge matching.
+		fileRelPath, _ := filepath.Rel(repoPath, fa.FilePath)
+
 		for _, ref := range fa.References {
-			if _, found := symbolTable[ref.ToName]; !found {
+			cnt := symbolCount[ref.ToName]
+			if cnt == 0 {
 				continue // skip unresolved
+			}
+			if cnt > 1 {
+				skippedAmbiguous++
+				continue // skip ambiguous — would create cartesian product
 			}
 
 			switch ref.Kind {
@@ -540,7 +568,7 @@ func (a *Analyzer) writePass2(ctx context.Context, c *client.Client, analyses []
 				})
 			case "imports":
 				importEdges = append(importEdges, map[string]any{
-					"from": map[string]any{"path": ref.FilePath},
+					"from": map[string]any{"path": fileRelPath},
 					"to":   map[string]any{"name": ref.ToName},
 				})
 			case "inherits":
@@ -570,6 +598,10 @@ func (a *Analyzer) writePass2(ctx context.Context, c *client.Client, analyses []
 				})
 			}
 		}
+	}
+
+	if skippedAmbiguous > 0 {
+		log.Printf("[DEBUG] pass2: skipped %d ambiguous references (target name matches multiple symbols)", skippedAmbiguous)
 	}
 
 	// Raw Cypher MATCH+CREATE for all pass 2 edges (avoids UNWIND+MERGE memory spikes)
@@ -634,15 +666,21 @@ func (a *Analyzer) writePass2(ctx context.Context, c *client.Client, analyses []
 	return nil
 }
 
-// gqlSetSource is a raw Cypher query that sets source on a node matched by name+path.
+// gqlSetSourceBatch is a Cypher query for batched source code writes via UNWIND.
 // Uses MATCH+SET (no MERGE) so no graph scan for existence checking is needed.
-const gqlSetSource = `MATCH (n {name: $name, path: $path}) SET n.source = $source`
+const gqlSetSourceBatch = `MATCH (n {name: item.name, path: item.path}) SET n.source = item.source`
 
-// writeSourceCode sets source code on Function and Class nodes one at a time.
+// sourceCodeBatchSize limits source code items per UNWIND batch.
+// Source code strings can be large, so batches are kept smaller than edge batches
+// to avoid oversized Redis commands.
+const sourceCodeBatchSize = 5
+
+// writeSourceCode sets source code on Function and Class nodes via batched UNWIND.
 // Separated from MERGE to keep merge queries small — the FalkorDB Go client
 // inlines all parameters into the Redis command string, so large source code
 // values in MERGE batches create massive commands that overwhelm memory.
 func (a *Analyzer) writeSourceCode(ctx context.Context, c *client.Client, analyses []FileAnalysis) error {
+	var items []map[string]any
 	for _, fa := range analyses {
 		for _, sym := range fa.Symbols {
 			if sym.Source == "" {
@@ -650,21 +688,19 @@ func (a *Analyzer) writeSourceCode(ctx context.Context, c *client.Client, analys
 			}
 			switch sym.Kind {
 			case "function", "method", "class", "struct", "interface", "enum":
-				if err := ctx.Err(); err != nil {
-					return err
-				}
-				_, err := c.ExecuteRaw(ctx, gqlSetSource, map[string]any{
+				items = append(items, map[string]any{
 					"name":   sym.Name,
 					"path":   sym.Path,
 					"source": truncateSource(sym.Source),
 				})
-				if err != nil {
-					return fmt.Errorf("setSource %s/%s: %w", sym.Path, sym.Name, err)
-				}
 			}
 		}
 	}
-	return nil
+	if len(items) == 0 {
+		return nil
+	}
+	log.Printf("[DEBUG] writeSourceCode: %d items in batches of %d", len(items), sourceCodeBatchSize)
+	return c.ExecuteRawBatch(ctx, gqlSetSourceBatch, items, sourceCodeBatchSize)
 }
 
 // isTestFile returns true if the file path looks like a test file that should
@@ -778,91 +814,73 @@ type edgeSpec struct {
 	EdgeProps map[string]string // optional edge properties, field → param key
 }
 
-// createEdgesRaw creates edges one at a time via raw Cypher MATCH+CREATE.
+// createEdgesRaw creates edges via batched UNWIND raw Cypher for efficiency.
 // Each item is a map with "from" and "to" sub-maps containing match fields,
 // and optionally an "edge" sub-map for relationship properties.
+// Uses Client.ExecuteRawBatch to reduce FalkorDB round-trips.
 func createEdgesRaw(ctx context.Context, c *client.Client, items []map[string]any, spec edgeSpec) error {
-	query := buildEdgeCypher(spec)
-	for _, item := range items {
-		if err := ctx.Err(); err != nil {
-			return err
-		}
-		params := extractEdgeParams(item, spec)
-		if _, err := c.ExecuteRaw(ctx, query, params); err != nil {
-			return fmt.Errorf("create edge %s: %w", spec.RelType, err)
-		}
+	if len(items) == 0 {
+		return nil
+	}
+	query := buildEdgeCypherBatch(spec)
+	if err := c.ExecuteRawBatch(ctx, query, items, edgeBatchSize); err != nil {
+		return fmt.Errorf("create edge %s: %w", spec.RelType, err)
 	}
 	return nil
 }
 
-// buildEdgeCypher builds a parameterized MATCH+CREATE Cypher query for an edge.
+
+// buildEdgeCypherBatch builds a Cypher query for use with ExecuteRawBatch (UNWIND).
+// Uses item.from.field and item.to.field references instead of flat $param names.
 // Example output:
 //
-//	MATCH (a:File {path: $from_path})
-//	MATCH (b:Function {name: $to_name, path: $to_path})
+//	MATCH (a:File {path: item.from.path})
+//	MATCH (b:Function {name: item.to.name, path: item.to.path})
 //	CREATE (a)-[:DEFINES]->(b)
-func buildEdgeCypher(spec edgeSpec) string {
+func buildEdgeCypherBatch(spec edgeSpec) string {
 	var sb strings.Builder
 	sb.WriteString("MATCH (a:")
 	sb.WriteString(spec.FromLabel)
 	sb.WriteString(" {")
-	writeWhereProps(&sb, spec.FromWhere)
+	writeBatchWhereProps(&sb, "from", spec.FromWhere)
 	sb.WriteString("}) MATCH (b:")
 	sb.WriteString(spec.ToLabel)
 	sb.WriteString(" {")
-	writeWhereProps(&sb, spec.ToWhere)
-	sb.WriteString("}) CREATE (a)-[r:")
+	writeBatchWhereProps(&sb, "to", spec.ToWhere)
+	sb.WriteString("}) MERGE (a)-[r:")
 	sb.WriteString(spec.RelType)
 	sb.WriteString("]->(b)")
 	if len(spec.EdgeProps) > 0 {
 		sb.WriteString(" SET ")
 		first := true
-		for field, param := range spec.EdgeProps {
+		for field := range spec.EdgeProps {
 			if !first {
 				sb.WriteString(", ")
 			}
 			sb.WriteString("r.")
 			sb.WriteString(field)
-			sb.WriteString(" = $")
-			sb.WriteString(param)
+			sb.WriteString(" = item.edge.")
+			sb.WriteString(field)
 			first = false
 		}
 	}
 	return sb.String()
 }
 
-// writeWhereProps writes Cypher property match expressions like "name: $to_name, path: $to_path".
-func writeWhereProps(sb *strings.Builder, where map[string]string) {
+// writeBatchWhereProps writes Cypher property match expressions for UNWIND batch queries.
+// Uses item.prefix.field syntax (e.g., "name: item.from.name, path: item.from.path").
+func writeBatchWhereProps(sb *strings.Builder, prefix string, where map[string]string) {
 	first := true
-	for field, param := range where {
+	for field := range where {
 		if !first {
 			sb.WriteString(", ")
 		}
 		sb.WriteString(field)
-		sb.WriteString(": $")
-		sb.WriteString(param)
+		sb.WriteString(": item.")
+		sb.WriteString(prefix)
+		sb.WriteString(".")
+		sb.WriteString(field)
 		first = false
 	}
 }
 
-// extractEdgeParams converts an edge item map (with "from", "to", "edge" sub-maps)
-// into a flat parameter map for raw Cypher execution.
-func extractEdgeParams(item map[string]any, spec edgeSpec) map[string]any {
-	params := make(map[string]any)
-	if from, ok := item["from"].(map[string]any); ok {
-		for field, param := range spec.FromWhere {
-			params[param] = from[field]
-		}
-	}
-	if to, ok := item["to"].(map[string]any); ok {
-		for field, param := range spec.ToWhere {
-			params[param] = to[field]
-		}
-	}
-	if edge, ok := item["edge"].(map[string]any); ok {
-		for field, param := range spec.EdgeProps {
-			params[param] = edge[field]
-		}
-	}
-	return params
-}

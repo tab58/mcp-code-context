@@ -12,34 +12,6 @@ type Repository {
   modulesConnection(first: Int, after: String, where: ModuleWhere, sort: [ModuleSort!]): RepositoryModulesConnection!
 }
 
-type Module {
-  id: ID!
-  name: String!
-  path: String!
-  language: String
-  importPath: String
-  visibility: String
-  kind: String
-  startingLine: Int
-  endingLine: Int
-  functionsConnection(first: Int, after: String, where: FunctionWhere, sort: [FunctionSort!]): ModuleFunctionsConnection!
-  classesConnection(first: Int, after: String, where: ClassWhere, sort: [ClassSort!]): ModuleClassesConnection!
-  dependsOnConnection(first: Int, after: String, where: ModuleWhere, sort: [ModuleSort!]): ModuleDependsOnConnection!
-  dependedOnByConnection(first: Int, after: String, where: ModuleWhere, sort: [ModuleSort!]): ModuleDependedOnByConnection!
-  importedByConnection(first: Int, after: String, where: FileWhere, sort: [FileSort!]): ModuleImportedByConnection!
-  repositoryConnection(first: Int, after: String, where: RepositoryWhere, sort: [RepositorySort!]): ModuleRepositoryConnection!
-}
-
-type Folder {
-  id: ID!
-  path: String!
-  lastUpdated: DateTime!
-  subfoldersConnection(first: Int, after: String, where: FolderWhere, sort: [FolderSort!]): FolderSubfoldersConnection!
-  filesConnection(first: Int, after: String, where: FileWhere, sort: [FileSort!]): FolderFilesConnection!
-  parentFolderConnection(first: Int, after: String, where: FolderWhere, sort: [FolderSort!]): FolderParentFolderConnection!
-  repositoryConnection(first: Int, after: String, where: RepositoryWhere, sort: [RepositorySort!]): FolderRepositoryConnection!
-}
-
 type File {
   id: ID!
   path: String!
@@ -76,6 +48,41 @@ type Class {
   repositoryConnection(first: Int, after: String, where: RepositoryWhere, sort: [RepositorySort!]): ClassRepositoryConnection!
 }
 
+type ExternalReference {
+  id: ID!
+  name: String!
+  importPath: String!
+  repositoryConnection(first: Int, after: String, where: RepositoryWhere, sort: [RepositorySort!]): ExternalReferenceRepositoryConnection!
+}
+
+type Module {
+  id: ID!
+  name: String!
+  path: String!
+  language: String
+  importPath: String
+  visibility: String
+  kind: String
+  startingLine: Int
+  endingLine: Int
+  functionsConnection(first: Int, after: String, where: FunctionWhere, sort: [FunctionSort!]): ModuleFunctionsConnection!
+  classesConnection(first: Int, after: String, where: ClassWhere, sort: [ClassSort!]): ModuleClassesConnection!
+  dependsOnConnection(first: Int, after: String, where: ModuleWhere, sort: [ModuleSort!]): ModuleDependsOnConnection!
+  dependedOnByConnection(first: Int, after: String, where: ModuleWhere, sort: [ModuleSort!]): ModuleDependedOnByConnection!
+  importedByConnection(first: Int, after: String, where: FileWhere, sort: [FileSort!]): ModuleImportedByConnection!
+  repositoryConnection(first: Int, after: String, where: RepositoryWhere, sort: [RepositorySort!]): ModuleRepositoryConnection!
+}
+
+type Folder {
+  id: ID!
+  path: String!
+  lastUpdated: DateTime!
+  subfoldersConnection(first: Int, after: String, where: FolderWhere, sort: [FolderSort!]): FolderSubfoldersConnection!
+  filesConnection(first: Int, after: String, where: FileWhere, sort: [FileSort!]): FolderFilesConnection!
+  parentFolderConnection(first: Int, after: String, where: FolderWhere, sort: [FolderSort!]): FolderParentFolderConnection!
+  repositoryConnection(first: Int, after: String, where: RepositoryWhere, sort: [RepositorySort!]): FolderRepositoryConnection!
+}
+
 type Function {
   id: ID!
   name: String!
@@ -97,13 +104,6 @@ type Function {
   classConnection(first: Int, after: String, where: ClassWhere, sort: [ClassSort!]): FunctionClassConnection!
   moduleConnection(first: Int, after: String, where: ModuleWhere, sort: [ModuleSort!]): FunctionModuleConnection!
   repositoryConnection(first: Int, after: String, where: RepositoryWhere, sort: [RepositorySort!]): FunctionRepositoryConnection!
-}
-
-type ExternalReference {
-  id: ID!
-  name: String!
-  importPath: String!
-  repositoryConnection(first: Int, after: String, where: RepositoryWhere, sort: [RepositorySort!]): ExternalReferenceRepositoryConnection!
 }
 
 input RepositoryWhere {
@@ -254,316 +254,6 @@ type RepositorysConnection {
 
 type RepositoryEdge {
   node: Repository!
-  cursor: String!
-}
-
-input ModuleWhere {
-  id: ID
-  id_gt: ID
-  id_gte: ID
-  id_lt: ID
-  id_lte: ID
-  id_contains: ID
-  id_startsWith: ID
-  id_endsWith: ID
-  id_regex: ID
-  id_in: [ID!]
-  id_nin: [ID!]
-  id_not: ID
-  id_isNull: Boolean
-  name: String
-  name_gt: String
-  name_gte: String
-  name_lt: String
-  name_lte: String
-  name_contains: String
-  name_startsWith: String
-  name_endsWith: String
-  name_regex: String
-  name_in: [String!]
-  name_nin: [String!]
-  name_not: String
-  name_isNull: Boolean
-  path: String
-  path_gt: String
-  path_gte: String
-  path_lt: String
-  path_lte: String
-  path_contains: String
-  path_startsWith: String
-  path_endsWith: String
-  path_regex: String
-  path_in: [String!]
-  path_nin: [String!]
-  path_not: String
-  path_isNull: Boolean
-  language: String
-  language_gt: String
-  language_gte: String
-  language_lt: String
-  language_lte: String
-  language_contains: String
-  language_startsWith: String
-  language_endsWith: String
-  language_regex: String
-  language_in: [String!]
-  language_nin: [String!]
-  language_not: String
-  language_isNull: Boolean
-  importPath: String
-  importPath_gt: String
-  importPath_gte: String
-  importPath_lt: String
-  importPath_lte: String
-  importPath_contains: String
-  importPath_startsWith: String
-  importPath_endsWith: String
-  importPath_regex: String
-  importPath_in: [String!]
-  importPath_nin: [String!]
-  importPath_not: String
-  importPath_isNull: Boolean
-  visibility: String
-  visibility_gt: String
-  visibility_gte: String
-  visibility_lt: String
-  visibility_lte: String
-  visibility_contains: String
-  visibility_startsWith: String
-  visibility_endsWith: String
-  visibility_regex: String
-  visibility_in: [String!]
-  visibility_nin: [String!]
-  visibility_not: String
-  visibility_isNull: Boolean
-  kind: String
-  kind_gt: String
-  kind_gte: String
-  kind_lt: String
-  kind_lte: String
-  kind_contains: String
-  kind_startsWith: String
-  kind_endsWith: String
-  kind_regex: String
-  kind_in: [String!]
-  kind_nin: [String!]
-  kind_not: String
-  kind_isNull: Boolean
-  startingLine: Int
-  startingLine_gt: Int
-  startingLine_gte: Int
-  startingLine_lt: Int
-  startingLine_lte: Int
-  startingLine_in: [Int!]
-  startingLine_nin: [Int!]
-  startingLine_not: Int
-  startingLine_isNull: Boolean
-  endingLine: Int
-  endingLine_gt: Int
-  endingLine_gte: Int
-  endingLine_lt: Int
-  endingLine_lte: Int
-  endingLine_in: [Int!]
-  endingLine_nin: [Int!]
-  endingLine_not: Int
-  endingLine_isNull: Boolean
-  functions_some: FunctionWhere
-  classes_some: ClassWhere
-  dependsOn_some: ModuleWhere
-  dependedOnBy_some: ModuleWhere
-  importedBy_some: FileWhere
-  repository: RepositoryWhere
-  AND: [ModuleWhere!]
-  OR: [ModuleWhere!]
-  NOT: ModuleWhere
-}
-
-input ModuleSort {
-  id: SortDirection
-  name: SortDirection
-  path: SortDirection
-  language: SortDirection
-  importPath: SortDirection
-  visibility: SortDirection
-  kind: SortDirection
-  startingLine: SortDirection
-  endingLine: SortDirection
-}
-
-input ModuleCreateInput {
-  name: String!
-  path: String!
-  language: String
-  importPath: String
-  visibility: String
-  kind: String
-  startingLine: Int
-  endingLine: Int
-  functions: ModuleFunctionsFieldInput
-  classes: ModuleClassesFieldInput
-  dependsOn: ModuleDependsOnFieldInput
-  dependedOnBy: ModuleDependedOnByFieldInput
-  importedBy: ModuleImportedByFieldInput
-  repository: ModuleRepositoryFieldInput
-}
-
-input ModuleUpdateInput {
-  name: String
-  path: String
-  language: String
-  importPath: String
-  visibility: String
-  kind: String
-  startingLine: Int
-  endingLine: Int
-  functions: ModuleFunctionsUpdateFieldInput
-  classes: ModuleClassesUpdateFieldInput
-  dependsOn: ModuleDependsOnUpdateFieldInput
-  dependedOnBy: ModuleDependedOnByUpdateFieldInput
-  importedBy: ModuleImportedByUpdateFieldInput
-  repository: ModuleRepositoryUpdateFieldInput
-}
-
-type CreateModulesMutationResponse {
-  modules: [Module!]!
-}
-
-type UpdateModulesMutationResponse {
-  modules: [Module!]!
-}
-
-input ModuleMatchInput {
-  name: String
-  path: String
-  language: String
-  importPath: String
-  visibility: String
-  kind: String
-  startingLine: Int
-  endingLine: Int
-}
-
-input ModuleMergeInput {
-  match: ModuleMatchInput!
-  onCreate: ModuleCreateInput
-  onMatch: ModuleUpdateInput
-}
-
-type MergeModulesMutationResponse {
-  modules: [Module!]!
-}
-
-type ModulesConnection {
-  edges: [ModuleEdge!]!
-  pageInfo: PageInfo!
-  totalCount: Int!
-}
-
-type ModuleEdge {
-  node: Module!
-  cursor: String!
-}
-
-input FolderWhere {
-  id: ID
-  id_gt: ID
-  id_gte: ID
-  id_lt: ID
-  id_lte: ID
-  id_contains: ID
-  id_startsWith: ID
-  id_endsWith: ID
-  id_regex: ID
-  id_in: [ID!]
-  id_nin: [ID!]
-  id_not: ID
-  id_isNull: Boolean
-  path: String
-  path_gt: String
-  path_gte: String
-  path_lt: String
-  path_lte: String
-  path_contains: String
-  path_startsWith: String
-  path_endsWith: String
-  path_regex: String
-  path_in: [String!]
-  path_nin: [String!]
-  path_not: String
-  path_isNull: Boolean
-  lastUpdated: DateTime
-  lastUpdated_gt: DateTime
-  lastUpdated_gte: DateTime
-  lastUpdated_lt: DateTime
-  lastUpdated_lte: DateTime
-  lastUpdated_in: [DateTime!]
-  lastUpdated_nin: [DateTime!]
-  lastUpdated_not: DateTime
-  lastUpdated_isNull: Boolean
-  subfolders_some: FolderWhere
-  files_some: FileWhere
-  parentFolder: FolderWhere
-  repository: RepositoryWhere
-  AND: [FolderWhere!]
-  OR: [FolderWhere!]
-  NOT: FolderWhere
-}
-
-input FolderSort {
-  id: SortDirection
-  path: SortDirection
-  lastUpdated: SortDirection
-}
-
-input FolderCreateInput {
-  path: String!
-  lastUpdated: DateTime!
-  subfolders: FolderSubfoldersFieldInput
-  files: FolderFilesFieldInput
-  parentFolder: FolderParentFolderFieldInput
-  repository: FolderRepositoryFieldInput
-}
-
-input FolderUpdateInput {
-  path: String
-  lastUpdated: DateTime
-  subfolders: FolderSubfoldersUpdateFieldInput
-  files: FolderFilesUpdateFieldInput
-  parentFolder: FolderParentFolderUpdateFieldInput
-  repository: FolderRepositoryUpdateFieldInput
-}
-
-type CreateFoldersMutationResponse {
-  folders: [Folder!]!
-}
-
-type UpdateFoldersMutationResponse {
-  folders: [Folder!]!
-}
-
-input FolderMatchInput {
-  path: String
-  lastUpdated: DateTime
-}
-
-input FolderMergeInput {
-  match: FolderMatchInput!
-  onCreate: FolderCreateInput
-  onMatch: FolderUpdateInput
-}
-
-type MergeFoldersMutationResponse {
-  folders: [Folder!]!
-}
-
-type FoldersConnection {
-  edges: [FolderEdge!]!
-  pageInfo: PageInfo!
-  totalCount: Int!
-}
-
-type FolderEdge {
-  node: Folder!
   cursor: String!
 }
 
@@ -953,6 +643,414 @@ type ClassEdge {
   cursor: String!
 }
 
+input ExternalReferenceWhere {
+  id: ID
+  id_gt: ID
+  id_gte: ID
+  id_lt: ID
+  id_lte: ID
+  id_contains: ID
+  id_startsWith: ID
+  id_endsWith: ID
+  id_regex: ID
+  id_in: [ID!]
+  id_nin: [ID!]
+  id_not: ID
+  id_isNull: Boolean
+  name: String
+  name_gt: String
+  name_gte: String
+  name_lt: String
+  name_lte: String
+  name_contains: String
+  name_startsWith: String
+  name_endsWith: String
+  name_regex: String
+  name_in: [String!]
+  name_nin: [String!]
+  name_not: String
+  name_isNull: Boolean
+  importPath: String
+  importPath_gt: String
+  importPath_gte: String
+  importPath_lt: String
+  importPath_lte: String
+  importPath_contains: String
+  importPath_startsWith: String
+  importPath_endsWith: String
+  importPath_regex: String
+  importPath_in: [String!]
+  importPath_nin: [String!]
+  importPath_not: String
+  importPath_isNull: Boolean
+  repository: RepositoryWhere
+  AND: [ExternalReferenceWhere!]
+  OR: [ExternalReferenceWhere!]
+  NOT: ExternalReferenceWhere
+}
+
+input ExternalReferenceSort {
+  id: SortDirection
+  name: SortDirection
+  importPath: SortDirection
+}
+
+input ExternalReferenceCreateInput {
+  name: String!
+  importPath: String!
+  repository: ExternalReferenceRepositoryFieldInput
+}
+
+input ExternalReferenceUpdateInput {
+  name: String
+  importPath: String
+  repository: ExternalReferenceRepositoryUpdateFieldInput
+}
+
+type CreateExternalReferencesMutationResponse {
+  externalReferences: [ExternalReference!]!
+}
+
+type UpdateExternalReferencesMutationResponse {
+  externalReferences: [ExternalReference!]!
+}
+
+input ExternalReferenceMatchInput {
+  name: String
+  importPath: String
+}
+
+input ExternalReferenceMergeInput {
+  match: ExternalReferenceMatchInput!
+  onCreate: ExternalReferenceCreateInput
+  onMatch: ExternalReferenceUpdateInput
+}
+
+type MergeExternalReferencesMutationResponse {
+  externalReferences: [ExternalReference!]!
+}
+
+type ExternalReferencesConnection {
+  edges: [ExternalReferenceEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type ExternalReferenceEdge {
+  node: ExternalReference!
+  cursor: String!
+}
+
+input ModuleWhere {
+  id: ID
+  id_gt: ID
+  id_gte: ID
+  id_lt: ID
+  id_lte: ID
+  id_contains: ID
+  id_startsWith: ID
+  id_endsWith: ID
+  id_regex: ID
+  id_in: [ID!]
+  id_nin: [ID!]
+  id_not: ID
+  id_isNull: Boolean
+  name: String
+  name_gt: String
+  name_gte: String
+  name_lt: String
+  name_lte: String
+  name_contains: String
+  name_startsWith: String
+  name_endsWith: String
+  name_regex: String
+  name_in: [String!]
+  name_nin: [String!]
+  name_not: String
+  name_isNull: Boolean
+  path: String
+  path_gt: String
+  path_gte: String
+  path_lt: String
+  path_lte: String
+  path_contains: String
+  path_startsWith: String
+  path_endsWith: String
+  path_regex: String
+  path_in: [String!]
+  path_nin: [String!]
+  path_not: String
+  path_isNull: Boolean
+  language: String
+  language_gt: String
+  language_gte: String
+  language_lt: String
+  language_lte: String
+  language_contains: String
+  language_startsWith: String
+  language_endsWith: String
+  language_regex: String
+  language_in: [String!]
+  language_nin: [String!]
+  language_not: String
+  language_isNull: Boolean
+  importPath: String
+  importPath_gt: String
+  importPath_gte: String
+  importPath_lt: String
+  importPath_lte: String
+  importPath_contains: String
+  importPath_startsWith: String
+  importPath_endsWith: String
+  importPath_regex: String
+  importPath_in: [String!]
+  importPath_nin: [String!]
+  importPath_not: String
+  importPath_isNull: Boolean
+  visibility: String
+  visibility_gt: String
+  visibility_gte: String
+  visibility_lt: String
+  visibility_lte: String
+  visibility_contains: String
+  visibility_startsWith: String
+  visibility_endsWith: String
+  visibility_regex: String
+  visibility_in: [String!]
+  visibility_nin: [String!]
+  visibility_not: String
+  visibility_isNull: Boolean
+  kind: String
+  kind_gt: String
+  kind_gte: String
+  kind_lt: String
+  kind_lte: String
+  kind_contains: String
+  kind_startsWith: String
+  kind_endsWith: String
+  kind_regex: String
+  kind_in: [String!]
+  kind_nin: [String!]
+  kind_not: String
+  kind_isNull: Boolean
+  startingLine: Int
+  startingLine_gt: Int
+  startingLine_gte: Int
+  startingLine_lt: Int
+  startingLine_lte: Int
+  startingLine_in: [Int!]
+  startingLine_nin: [Int!]
+  startingLine_not: Int
+  startingLine_isNull: Boolean
+  endingLine: Int
+  endingLine_gt: Int
+  endingLine_gte: Int
+  endingLine_lt: Int
+  endingLine_lte: Int
+  endingLine_in: [Int!]
+  endingLine_nin: [Int!]
+  endingLine_not: Int
+  endingLine_isNull: Boolean
+  functions_some: FunctionWhere
+  classes_some: ClassWhere
+  dependsOn_some: ModuleWhere
+  dependedOnBy_some: ModuleWhere
+  importedBy_some: FileWhere
+  repository: RepositoryWhere
+  AND: [ModuleWhere!]
+  OR: [ModuleWhere!]
+  NOT: ModuleWhere
+}
+
+input ModuleSort {
+  id: SortDirection
+  name: SortDirection
+  path: SortDirection
+  language: SortDirection
+  importPath: SortDirection
+  visibility: SortDirection
+  kind: SortDirection
+  startingLine: SortDirection
+  endingLine: SortDirection
+}
+
+input ModuleCreateInput {
+  name: String!
+  path: String!
+  language: String
+  importPath: String
+  visibility: String
+  kind: String
+  startingLine: Int
+  endingLine: Int
+  functions: ModuleFunctionsFieldInput
+  classes: ModuleClassesFieldInput
+  dependsOn: ModuleDependsOnFieldInput
+  dependedOnBy: ModuleDependedOnByFieldInput
+  importedBy: ModuleImportedByFieldInput
+  repository: ModuleRepositoryFieldInput
+}
+
+input ModuleUpdateInput {
+  name: String
+  path: String
+  language: String
+  importPath: String
+  visibility: String
+  kind: String
+  startingLine: Int
+  endingLine: Int
+  functions: ModuleFunctionsUpdateFieldInput
+  classes: ModuleClassesUpdateFieldInput
+  dependsOn: ModuleDependsOnUpdateFieldInput
+  dependedOnBy: ModuleDependedOnByUpdateFieldInput
+  importedBy: ModuleImportedByUpdateFieldInput
+  repository: ModuleRepositoryUpdateFieldInput
+}
+
+type CreateModulesMutationResponse {
+  modules: [Module!]!
+}
+
+type UpdateModulesMutationResponse {
+  modules: [Module!]!
+}
+
+input ModuleMatchInput {
+  name: String
+  path: String
+  language: String
+  importPath: String
+  visibility: String
+  kind: String
+  startingLine: Int
+  endingLine: Int
+}
+
+input ModuleMergeInput {
+  match: ModuleMatchInput!
+  onCreate: ModuleCreateInput
+  onMatch: ModuleUpdateInput
+}
+
+type MergeModulesMutationResponse {
+  modules: [Module!]!
+}
+
+type ModulesConnection {
+  edges: [ModuleEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type ModuleEdge {
+  node: Module!
+  cursor: String!
+}
+
+input FolderWhere {
+  id: ID
+  id_gt: ID
+  id_gte: ID
+  id_lt: ID
+  id_lte: ID
+  id_contains: ID
+  id_startsWith: ID
+  id_endsWith: ID
+  id_regex: ID
+  id_in: [ID!]
+  id_nin: [ID!]
+  id_not: ID
+  id_isNull: Boolean
+  path: String
+  path_gt: String
+  path_gte: String
+  path_lt: String
+  path_lte: String
+  path_contains: String
+  path_startsWith: String
+  path_endsWith: String
+  path_regex: String
+  path_in: [String!]
+  path_nin: [String!]
+  path_not: String
+  path_isNull: Boolean
+  lastUpdated: DateTime
+  lastUpdated_gt: DateTime
+  lastUpdated_gte: DateTime
+  lastUpdated_lt: DateTime
+  lastUpdated_lte: DateTime
+  lastUpdated_in: [DateTime!]
+  lastUpdated_nin: [DateTime!]
+  lastUpdated_not: DateTime
+  lastUpdated_isNull: Boolean
+  subfolders_some: FolderWhere
+  files_some: FileWhere
+  parentFolder: FolderWhere
+  repository: RepositoryWhere
+  AND: [FolderWhere!]
+  OR: [FolderWhere!]
+  NOT: FolderWhere
+}
+
+input FolderSort {
+  id: SortDirection
+  path: SortDirection
+  lastUpdated: SortDirection
+}
+
+input FolderCreateInput {
+  path: String!
+  lastUpdated: DateTime!
+  subfolders: FolderSubfoldersFieldInput
+  files: FolderFilesFieldInput
+  parentFolder: FolderParentFolderFieldInput
+  repository: FolderRepositoryFieldInput
+}
+
+input FolderUpdateInput {
+  path: String
+  lastUpdated: DateTime
+  subfolders: FolderSubfoldersUpdateFieldInput
+  files: FolderFilesUpdateFieldInput
+  parentFolder: FolderParentFolderUpdateFieldInput
+  repository: FolderRepositoryUpdateFieldInput
+}
+
+type CreateFoldersMutationResponse {
+  folders: [Folder!]!
+}
+
+type UpdateFoldersMutationResponse {
+  folders: [Folder!]!
+}
+
+input FolderMatchInput {
+  path: String
+  lastUpdated: DateTime
+}
+
+input FolderMergeInput {
+  match: FolderMatchInput!
+  onCreate: FolderCreateInput
+  onMatch: FolderUpdateInput
+}
+
+type MergeFoldersMutationResponse {
+  folders: [Folder!]!
+}
+
+type FoldersConnection {
+  edges: [FolderEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type FolderEdge {
+  node: Folder!
+  cursor: String!
+}
+
 input FunctionWhere {
   id: ID
   id_gt: ID
@@ -1199,104 +1297,6 @@ type FunctionEdge {
   cursor: String!
 }
 
-input ExternalReferenceWhere {
-  id: ID
-  id_gt: ID
-  id_gte: ID
-  id_lt: ID
-  id_lte: ID
-  id_contains: ID
-  id_startsWith: ID
-  id_endsWith: ID
-  id_regex: ID
-  id_in: [ID!]
-  id_nin: [ID!]
-  id_not: ID
-  id_isNull: Boolean
-  name: String
-  name_gt: String
-  name_gte: String
-  name_lt: String
-  name_lte: String
-  name_contains: String
-  name_startsWith: String
-  name_endsWith: String
-  name_regex: String
-  name_in: [String!]
-  name_nin: [String!]
-  name_not: String
-  name_isNull: Boolean
-  importPath: String
-  importPath_gt: String
-  importPath_gte: String
-  importPath_lt: String
-  importPath_lte: String
-  importPath_contains: String
-  importPath_startsWith: String
-  importPath_endsWith: String
-  importPath_regex: String
-  importPath_in: [String!]
-  importPath_nin: [String!]
-  importPath_not: String
-  importPath_isNull: Boolean
-  repository: RepositoryWhere
-  AND: [ExternalReferenceWhere!]
-  OR: [ExternalReferenceWhere!]
-  NOT: ExternalReferenceWhere
-}
-
-input ExternalReferenceSort {
-  id: SortDirection
-  name: SortDirection
-  importPath: SortDirection
-}
-
-input ExternalReferenceCreateInput {
-  name: String!
-  importPath: String!
-  repository: ExternalReferenceRepositoryFieldInput
-}
-
-input ExternalReferenceUpdateInput {
-  name: String
-  importPath: String
-  repository: ExternalReferenceRepositoryUpdateFieldInput
-}
-
-type CreateExternalReferencesMutationResponse {
-  externalReferences: [ExternalReference!]!
-}
-
-type UpdateExternalReferencesMutationResponse {
-  externalReferences: [ExternalReference!]!
-}
-
-input ExternalReferenceMatchInput {
-  name: String
-  importPath: String
-}
-
-input ExternalReferenceMergeInput {
-  match: ExternalReferenceMatchInput!
-  onCreate: ExternalReferenceCreateInput
-  onMatch: ExternalReferenceUpdateInput
-}
-
-type MergeExternalReferencesMutationResponse {
-  externalReferences: [ExternalReference!]!
-}
-
-type ExternalReferencesConnection {
-  edges: [ExternalReferenceEdge!]!
-  pageInfo: PageInfo!
-  totalCount: Int!
-}
-
-type ExternalReferenceEdge {
-  node: ExternalReference!
-  cursor: String!
-}
-
 input RepositoryFoldersFieldInput {
   create: [RepositoryFoldersCreateFieldInput!]
   connect: [RepositoryFoldersConnectFieldInput!]
@@ -1429,456 +1429,6 @@ type RepositoryModulesConnection {
 
 type RepositoryModulesEdge {
   node: Module!
-  cursor: String!
-}
-
-input ModuleFunctionsFieldInput {
-  create: [ModuleFunctionsCreateFieldInput!]
-  connect: [ModuleFunctionsConnectFieldInput!]
-}
-
-input ModuleFunctionsCreateFieldInput {
-  node: FunctionCreateInput!
-}
-
-input ModuleFunctionsConnectFieldInput {
-  where: FunctionWhere
-}
-
-input ModuleFunctionsUpdateFieldInput {
-  create: [ModuleFunctionsCreateFieldInput!]
-  connect: [ModuleFunctionsConnectFieldInput!]
-  disconnect: [ModuleFunctionsDisconnectFieldInput!]
-  update: ModuleFunctionsUpdateConnectionInput
-  delete: [ModuleFunctionsDeleteFieldInput!]
-}
-
-input ModuleFunctionsDisconnectFieldInput {
-  where: FunctionWhere
-}
-
-input ModuleFunctionsDeleteFieldInput {
-  where: FunctionWhere
-}
-
-input ModuleFunctionsUpdateConnectionInput {
-  where: FunctionWhere
-  node: FunctionUpdateInput
-}
-
-type ModuleFunctionsConnection {
-  edges: [ModuleFunctionsEdge!]!
-  pageInfo: PageInfo!
-  totalCount: Int!
-}
-
-type ModuleFunctionsEdge {
-  node: Function!
-  cursor: String!
-}
-
-input ModuleClassesFieldInput {
-  create: [ModuleClassesCreateFieldInput!]
-  connect: [ModuleClassesConnectFieldInput!]
-}
-
-input ModuleClassesCreateFieldInput {
-  node: ClassCreateInput!
-}
-
-input ModuleClassesConnectFieldInput {
-  where: ClassWhere
-}
-
-input ModuleClassesUpdateFieldInput {
-  create: [ModuleClassesCreateFieldInput!]
-  connect: [ModuleClassesConnectFieldInput!]
-  disconnect: [ModuleClassesDisconnectFieldInput!]
-  update: ModuleClassesUpdateConnectionInput
-  delete: [ModuleClassesDeleteFieldInput!]
-}
-
-input ModuleClassesDisconnectFieldInput {
-  where: ClassWhere
-}
-
-input ModuleClassesDeleteFieldInput {
-  where: ClassWhere
-}
-
-input ModuleClassesUpdateConnectionInput {
-  where: ClassWhere
-  node: ClassUpdateInput
-}
-
-type ModuleClassesConnection {
-  edges: [ModuleClassesEdge!]!
-  pageInfo: PageInfo!
-  totalCount: Int!
-}
-
-type ModuleClassesEdge {
-  node: Class!
-  cursor: String!
-}
-
-input ModuleDependsOnFieldInput {
-  create: [ModuleDependsOnCreateFieldInput!]
-  connect: [ModuleDependsOnConnectFieldInput!]
-}
-
-input ModuleDependsOnCreateFieldInput {
-  node: ModuleCreateInput!
-}
-
-input ModuleDependsOnConnectFieldInput {
-  where: ModuleWhere
-}
-
-input ModuleDependsOnUpdateFieldInput {
-  create: [ModuleDependsOnCreateFieldInput!]
-  connect: [ModuleDependsOnConnectFieldInput!]
-  disconnect: [ModuleDependsOnDisconnectFieldInput!]
-  update: ModuleDependsOnUpdateConnectionInput
-  delete: [ModuleDependsOnDeleteFieldInput!]
-}
-
-input ModuleDependsOnDisconnectFieldInput {
-  where: ModuleWhere
-}
-
-input ModuleDependsOnDeleteFieldInput {
-  where: ModuleWhere
-}
-
-input ModuleDependsOnUpdateConnectionInput {
-  where: ModuleWhere
-  node: ModuleUpdateInput
-}
-
-type ModuleDependsOnConnection {
-  edges: [ModuleDependsOnEdge!]!
-  pageInfo: PageInfo!
-  totalCount: Int!
-}
-
-type ModuleDependsOnEdge {
-  node: Module!
-  cursor: String!
-}
-
-input ModuleDependedOnByFieldInput {
-  create: [ModuleDependedOnByCreateFieldInput!]
-  connect: [ModuleDependedOnByConnectFieldInput!]
-}
-
-input ModuleDependedOnByCreateFieldInput {
-  node: ModuleCreateInput!
-}
-
-input ModuleDependedOnByConnectFieldInput {
-  where: ModuleWhere
-}
-
-input ModuleDependedOnByUpdateFieldInput {
-  create: [ModuleDependedOnByCreateFieldInput!]
-  connect: [ModuleDependedOnByConnectFieldInput!]
-  disconnect: [ModuleDependedOnByDisconnectFieldInput!]
-  update: ModuleDependedOnByUpdateConnectionInput
-  delete: [ModuleDependedOnByDeleteFieldInput!]
-}
-
-input ModuleDependedOnByDisconnectFieldInput {
-  where: ModuleWhere
-}
-
-input ModuleDependedOnByDeleteFieldInput {
-  where: ModuleWhere
-}
-
-input ModuleDependedOnByUpdateConnectionInput {
-  where: ModuleWhere
-  node: ModuleUpdateInput
-}
-
-type ModuleDependedOnByConnection {
-  edges: [ModuleDependedOnByEdge!]!
-  pageInfo: PageInfo!
-  totalCount: Int!
-}
-
-type ModuleDependedOnByEdge {
-  node: Module!
-  cursor: String!
-}
-
-input ModuleImportedByFieldInput {
-  create: [ModuleImportedByCreateFieldInput!]
-  connect: [ModuleImportedByConnectFieldInput!]
-}
-
-input ModuleImportedByCreateFieldInput {
-  node: FileCreateInput!
-}
-
-input ModuleImportedByConnectFieldInput {
-  where: FileWhere
-}
-
-input ModuleImportedByUpdateFieldInput {
-  create: [ModuleImportedByCreateFieldInput!]
-  connect: [ModuleImportedByConnectFieldInput!]
-  disconnect: [ModuleImportedByDisconnectFieldInput!]
-  update: ModuleImportedByUpdateConnectionInput
-  delete: [ModuleImportedByDeleteFieldInput!]
-}
-
-input ModuleImportedByDisconnectFieldInput {
-  where: FileWhere
-}
-
-input ModuleImportedByDeleteFieldInput {
-  where: FileWhere
-}
-
-input ModuleImportedByUpdateConnectionInput {
-  where: FileWhere
-  node: FileUpdateInput
-}
-
-type ModuleImportedByConnection {
-  edges: [ModuleImportedByEdge!]!
-  pageInfo: PageInfo!
-  totalCount: Int!
-}
-
-type ModuleImportedByEdge {
-  node: File!
-  cursor: String!
-}
-
-input ModuleRepositoryFieldInput {
-  create: [ModuleRepositoryCreateFieldInput!]
-  connect: [ModuleRepositoryConnectFieldInput!]
-}
-
-input ModuleRepositoryCreateFieldInput {
-  node: RepositoryCreateInput!
-}
-
-input ModuleRepositoryConnectFieldInput {
-  where: RepositoryWhere
-}
-
-input ModuleRepositoryUpdateFieldInput {
-  create: [ModuleRepositoryCreateFieldInput!]
-  connect: [ModuleRepositoryConnectFieldInput!]
-  disconnect: [ModuleRepositoryDisconnectFieldInput!]
-  update: ModuleRepositoryUpdateConnectionInput
-  delete: [ModuleRepositoryDeleteFieldInput!]
-}
-
-input ModuleRepositoryDisconnectFieldInput {
-  where: RepositoryWhere
-}
-
-input ModuleRepositoryDeleteFieldInput {
-  where: RepositoryWhere
-}
-
-input ModuleRepositoryUpdateConnectionInput {
-  where: RepositoryWhere
-  node: RepositoryUpdateInput
-}
-
-type ModuleRepositoryConnection {
-  edges: [ModuleRepositoryEdge!]!
-  pageInfo: PageInfo!
-  totalCount: Int!
-}
-
-type ModuleRepositoryEdge {
-  node: Repository!
-  cursor: String!
-}
-
-input FolderSubfoldersFieldInput {
-  create: [FolderSubfoldersCreateFieldInput!]
-  connect: [FolderSubfoldersConnectFieldInput!]
-}
-
-input FolderSubfoldersCreateFieldInput {
-  node: FolderCreateInput!
-}
-
-input FolderSubfoldersConnectFieldInput {
-  where: FolderWhere
-}
-
-input FolderSubfoldersUpdateFieldInput {
-  create: [FolderSubfoldersCreateFieldInput!]
-  connect: [FolderSubfoldersConnectFieldInput!]
-  disconnect: [FolderSubfoldersDisconnectFieldInput!]
-  update: FolderSubfoldersUpdateConnectionInput
-  delete: [FolderSubfoldersDeleteFieldInput!]
-}
-
-input FolderSubfoldersDisconnectFieldInput {
-  where: FolderWhere
-}
-
-input FolderSubfoldersDeleteFieldInput {
-  where: FolderWhere
-}
-
-input FolderSubfoldersUpdateConnectionInput {
-  where: FolderWhere
-  node: FolderUpdateInput
-}
-
-type FolderSubfoldersConnection {
-  edges: [FolderSubfoldersEdge!]!
-  pageInfo: PageInfo!
-  totalCount: Int!
-}
-
-type FolderSubfoldersEdge {
-  node: Folder!
-  cursor: String!
-}
-
-input FolderFilesFieldInput {
-  create: [FolderFilesCreateFieldInput!]
-  connect: [FolderFilesConnectFieldInput!]
-}
-
-input FolderFilesCreateFieldInput {
-  node: FileCreateInput!
-}
-
-input FolderFilesConnectFieldInput {
-  where: FileWhere
-}
-
-input FolderFilesUpdateFieldInput {
-  create: [FolderFilesCreateFieldInput!]
-  connect: [FolderFilesConnectFieldInput!]
-  disconnect: [FolderFilesDisconnectFieldInput!]
-  update: FolderFilesUpdateConnectionInput
-  delete: [FolderFilesDeleteFieldInput!]
-}
-
-input FolderFilesDisconnectFieldInput {
-  where: FileWhere
-}
-
-input FolderFilesDeleteFieldInput {
-  where: FileWhere
-}
-
-input FolderFilesUpdateConnectionInput {
-  where: FileWhere
-  node: FileUpdateInput
-}
-
-type FolderFilesConnection {
-  edges: [FolderFilesEdge!]!
-  pageInfo: PageInfo!
-  totalCount: Int!
-}
-
-type FolderFilesEdge {
-  node: File!
-  cursor: String!
-}
-
-input FolderParentFolderFieldInput {
-  create: [FolderParentFolderCreateFieldInput!]
-  connect: [FolderParentFolderConnectFieldInput!]
-}
-
-input FolderParentFolderCreateFieldInput {
-  node: FolderCreateInput!
-}
-
-input FolderParentFolderConnectFieldInput {
-  where: FolderWhere
-}
-
-input FolderParentFolderUpdateFieldInput {
-  create: [FolderParentFolderCreateFieldInput!]
-  connect: [FolderParentFolderConnectFieldInput!]
-  disconnect: [FolderParentFolderDisconnectFieldInput!]
-  update: FolderParentFolderUpdateConnectionInput
-  delete: [FolderParentFolderDeleteFieldInput!]
-}
-
-input FolderParentFolderDisconnectFieldInput {
-  where: FolderWhere
-}
-
-input FolderParentFolderDeleteFieldInput {
-  where: FolderWhere
-}
-
-input FolderParentFolderUpdateConnectionInput {
-  where: FolderWhere
-  node: FolderUpdateInput
-}
-
-type FolderParentFolderConnection {
-  edges: [FolderParentFolderEdge!]!
-  pageInfo: PageInfo!
-  totalCount: Int!
-}
-
-type FolderParentFolderEdge {
-  node: Folder!
-  cursor: String!
-}
-
-input FolderRepositoryFieldInput {
-  create: [FolderRepositoryCreateFieldInput!]
-  connect: [FolderRepositoryConnectFieldInput!]
-}
-
-input FolderRepositoryCreateFieldInput {
-  node: RepositoryCreateInput!
-}
-
-input FolderRepositoryConnectFieldInput {
-  where: RepositoryWhere
-}
-
-input FolderRepositoryUpdateFieldInput {
-  create: [FolderRepositoryCreateFieldInput!]
-  connect: [FolderRepositoryConnectFieldInput!]
-  disconnect: [FolderRepositoryDisconnectFieldInput!]
-  update: FolderRepositoryUpdateConnectionInput
-  delete: [FolderRepositoryDeleteFieldInput!]
-}
-
-input FolderRepositoryDisconnectFieldInput {
-  where: RepositoryWhere
-}
-
-input FolderRepositoryDeleteFieldInput {
-  where: RepositoryWhere
-}
-
-input FolderRepositoryUpdateConnectionInput {
-  where: RepositoryWhere
-  node: RepositoryUpdateInput
-}
-
-type FolderRepositoryConnection {
-  edges: [FolderRepositoryEdge!]!
-  pageInfo: PageInfo!
-  totalCount: Int!
-}
-
-type FolderRepositoryEdge {
-  node: Repository!
   cursor: String!
 }
 
@@ -2512,6 +2062,501 @@ type ClassRepositoryEdge {
   cursor: String!
 }
 
+input ExternalReferenceRepositoryFieldInput {
+  create: [ExternalReferenceRepositoryCreateFieldInput!]
+  connect: [ExternalReferenceRepositoryConnectFieldInput!]
+}
+
+input ExternalReferenceRepositoryCreateFieldInput {
+  node: RepositoryCreateInput!
+}
+
+input ExternalReferenceRepositoryConnectFieldInput {
+  where: RepositoryWhere
+}
+
+input ExternalReferenceRepositoryUpdateFieldInput {
+  create: [ExternalReferenceRepositoryCreateFieldInput!]
+  connect: [ExternalReferenceRepositoryConnectFieldInput!]
+  disconnect: [ExternalReferenceRepositoryDisconnectFieldInput!]
+  update: ExternalReferenceRepositoryUpdateConnectionInput
+  delete: [ExternalReferenceRepositoryDeleteFieldInput!]
+}
+
+input ExternalReferenceRepositoryDisconnectFieldInput {
+  where: RepositoryWhere
+}
+
+input ExternalReferenceRepositoryDeleteFieldInput {
+  where: RepositoryWhere
+}
+
+input ExternalReferenceRepositoryUpdateConnectionInput {
+  where: RepositoryWhere
+  node: RepositoryUpdateInput
+}
+
+type ExternalReferenceRepositoryConnection {
+  edges: [ExternalReferenceRepositoryEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type ExternalReferenceRepositoryEdge {
+  node: Repository!
+  cursor: String!
+}
+
+input ModuleFunctionsFieldInput {
+  create: [ModuleFunctionsCreateFieldInput!]
+  connect: [ModuleFunctionsConnectFieldInput!]
+}
+
+input ModuleFunctionsCreateFieldInput {
+  node: FunctionCreateInput!
+}
+
+input ModuleFunctionsConnectFieldInput {
+  where: FunctionWhere
+}
+
+input ModuleFunctionsUpdateFieldInput {
+  create: [ModuleFunctionsCreateFieldInput!]
+  connect: [ModuleFunctionsConnectFieldInput!]
+  disconnect: [ModuleFunctionsDisconnectFieldInput!]
+  update: ModuleFunctionsUpdateConnectionInput
+  delete: [ModuleFunctionsDeleteFieldInput!]
+}
+
+input ModuleFunctionsDisconnectFieldInput {
+  where: FunctionWhere
+}
+
+input ModuleFunctionsDeleteFieldInput {
+  where: FunctionWhere
+}
+
+input ModuleFunctionsUpdateConnectionInput {
+  where: FunctionWhere
+  node: FunctionUpdateInput
+}
+
+type ModuleFunctionsConnection {
+  edges: [ModuleFunctionsEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type ModuleFunctionsEdge {
+  node: Function!
+  cursor: String!
+}
+
+input ModuleClassesFieldInput {
+  create: [ModuleClassesCreateFieldInput!]
+  connect: [ModuleClassesConnectFieldInput!]
+}
+
+input ModuleClassesCreateFieldInput {
+  node: ClassCreateInput!
+}
+
+input ModuleClassesConnectFieldInput {
+  where: ClassWhere
+}
+
+input ModuleClassesUpdateFieldInput {
+  create: [ModuleClassesCreateFieldInput!]
+  connect: [ModuleClassesConnectFieldInput!]
+  disconnect: [ModuleClassesDisconnectFieldInput!]
+  update: ModuleClassesUpdateConnectionInput
+  delete: [ModuleClassesDeleteFieldInput!]
+}
+
+input ModuleClassesDisconnectFieldInput {
+  where: ClassWhere
+}
+
+input ModuleClassesDeleteFieldInput {
+  where: ClassWhere
+}
+
+input ModuleClassesUpdateConnectionInput {
+  where: ClassWhere
+  node: ClassUpdateInput
+}
+
+type ModuleClassesConnection {
+  edges: [ModuleClassesEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type ModuleClassesEdge {
+  node: Class!
+  cursor: String!
+}
+
+input ModuleDependsOnFieldInput {
+  create: [ModuleDependsOnCreateFieldInput!]
+  connect: [ModuleDependsOnConnectFieldInput!]
+}
+
+input ModuleDependsOnCreateFieldInput {
+  node: ModuleCreateInput!
+}
+
+input ModuleDependsOnConnectFieldInput {
+  where: ModuleWhere
+}
+
+input ModuleDependsOnUpdateFieldInput {
+  create: [ModuleDependsOnCreateFieldInput!]
+  connect: [ModuleDependsOnConnectFieldInput!]
+  disconnect: [ModuleDependsOnDisconnectFieldInput!]
+  update: ModuleDependsOnUpdateConnectionInput
+  delete: [ModuleDependsOnDeleteFieldInput!]
+}
+
+input ModuleDependsOnDisconnectFieldInput {
+  where: ModuleWhere
+}
+
+input ModuleDependsOnDeleteFieldInput {
+  where: ModuleWhere
+}
+
+input ModuleDependsOnUpdateConnectionInput {
+  where: ModuleWhere
+  node: ModuleUpdateInput
+}
+
+type ModuleDependsOnConnection {
+  edges: [ModuleDependsOnEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type ModuleDependsOnEdge {
+  node: Module!
+  cursor: String!
+}
+
+input ModuleDependedOnByFieldInput {
+  create: [ModuleDependedOnByCreateFieldInput!]
+  connect: [ModuleDependedOnByConnectFieldInput!]
+}
+
+input ModuleDependedOnByCreateFieldInput {
+  node: ModuleCreateInput!
+}
+
+input ModuleDependedOnByConnectFieldInput {
+  where: ModuleWhere
+}
+
+input ModuleDependedOnByUpdateFieldInput {
+  create: [ModuleDependedOnByCreateFieldInput!]
+  connect: [ModuleDependedOnByConnectFieldInput!]
+  disconnect: [ModuleDependedOnByDisconnectFieldInput!]
+  update: ModuleDependedOnByUpdateConnectionInput
+  delete: [ModuleDependedOnByDeleteFieldInput!]
+}
+
+input ModuleDependedOnByDisconnectFieldInput {
+  where: ModuleWhere
+}
+
+input ModuleDependedOnByDeleteFieldInput {
+  where: ModuleWhere
+}
+
+input ModuleDependedOnByUpdateConnectionInput {
+  where: ModuleWhere
+  node: ModuleUpdateInput
+}
+
+type ModuleDependedOnByConnection {
+  edges: [ModuleDependedOnByEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type ModuleDependedOnByEdge {
+  node: Module!
+  cursor: String!
+}
+
+input ModuleImportedByFieldInput {
+  create: [ModuleImportedByCreateFieldInput!]
+  connect: [ModuleImportedByConnectFieldInput!]
+}
+
+input ModuleImportedByCreateFieldInput {
+  node: FileCreateInput!
+}
+
+input ModuleImportedByConnectFieldInput {
+  where: FileWhere
+}
+
+input ModuleImportedByUpdateFieldInput {
+  create: [ModuleImportedByCreateFieldInput!]
+  connect: [ModuleImportedByConnectFieldInput!]
+  disconnect: [ModuleImportedByDisconnectFieldInput!]
+  update: ModuleImportedByUpdateConnectionInput
+  delete: [ModuleImportedByDeleteFieldInput!]
+}
+
+input ModuleImportedByDisconnectFieldInput {
+  where: FileWhere
+}
+
+input ModuleImportedByDeleteFieldInput {
+  where: FileWhere
+}
+
+input ModuleImportedByUpdateConnectionInput {
+  where: FileWhere
+  node: FileUpdateInput
+}
+
+type ModuleImportedByConnection {
+  edges: [ModuleImportedByEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type ModuleImportedByEdge {
+  node: File!
+  cursor: String!
+}
+
+input ModuleRepositoryFieldInput {
+  create: [ModuleRepositoryCreateFieldInput!]
+  connect: [ModuleRepositoryConnectFieldInput!]
+}
+
+input ModuleRepositoryCreateFieldInput {
+  node: RepositoryCreateInput!
+}
+
+input ModuleRepositoryConnectFieldInput {
+  where: RepositoryWhere
+}
+
+input ModuleRepositoryUpdateFieldInput {
+  create: [ModuleRepositoryCreateFieldInput!]
+  connect: [ModuleRepositoryConnectFieldInput!]
+  disconnect: [ModuleRepositoryDisconnectFieldInput!]
+  update: ModuleRepositoryUpdateConnectionInput
+  delete: [ModuleRepositoryDeleteFieldInput!]
+}
+
+input ModuleRepositoryDisconnectFieldInput {
+  where: RepositoryWhere
+}
+
+input ModuleRepositoryDeleteFieldInput {
+  where: RepositoryWhere
+}
+
+input ModuleRepositoryUpdateConnectionInput {
+  where: RepositoryWhere
+  node: RepositoryUpdateInput
+}
+
+type ModuleRepositoryConnection {
+  edges: [ModuleRepositoryEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type ModuleRepositoryEdge {
+  node: Repository!
+  cursor: String!
+}
+
+input FolderSubfoldersFieldInput {
+  create: [FolderSubfoldersCreateFieldInput!]
+  connect: [FolderSubfoldersConnectFieldInput!]
+}
+
+input FolderSubfoldersCreateFieldInput {
+  node: FolderCreateInput!
+}
+
+input FolderSubfoldersConnectFieldInput {
+  where: FolderWhere
+}
+
+input FolderSubfoldersUpdateFieldInput {
+  create: [FolderSubfoldersCreateFieldInput!]
+  connect: [FolderSubfoldersConnectFieldInput!]
+  disconnect: [FolderSubfoldersDisconnectFieldInput!]
+  update: FolderSubfoldersUpdateConnectionInput
+  delete: [FolderSubfoldersDeleteFieldInput!]
+}
+
+input FolderSubfoldersDisconnectFieldInput {
+  where: FolderWhere
+}
+
+input FolderSubfoldersDeleteFieldInput {
+  where: FolderWhere
+}
+
+input FolderSubfoldersUpdateConnectionInput {
+  where: FolderWhere
+  node: FolderUpdateInput
+}
+
+type FolderSubfoldersConnection {
+  edges: [FolderSubfoldersEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type FolderSubfoldersEdge {
+  node: Folder!
+  cursor: String!
+}
+
+input FolderFilesFieldInput {
+  create: [FolderFilesCreateFieldInput!]
+  connect: [FolderFilesConnectFieldInput!]
+}
+
+input FolderFilesCreateFieldInput {
+  node: FileCreateInput!
+}
+
+input FolderFilesConnectFieldInput {
+  where: FileWhere
+}
+
+input FolderFilesUpdateFieldInput {
+  create: [FolderFilesCreateFieldInput!]
+  connect: [FolderFilesConnectFieldInput!]
+  disconnect: [FolderFilesDisconnectFieldInput!]
+  update: FolderFilesUpdateConnectionInput
+  delete: [FolderFilesDeleteFieldInput!]
+}
+
+input FolderFilesDisconnectFieldInput {
+  where: FileWhere
+}
+
+input FolderFilesDeleteFieldInput {
+  where: FileWhere
+}
+
+input FolderFilesUpdateConnectionInput {
+  where: FileWhere
+  node: FileUpdateInput
+}
+
+type FolderFilesConnection {
+  edges: [FolderFilesEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type FolderFilesEdge {
+  node: File!
+  cursor: String!
+}
+
+input FolderParentFolderFieldInput {
+  create: [FolderParentFolderCreateFieldInput!]
+  connect: [FolderParentFolderConnectFieldInput!]
+}
+
+input FolderParentFolderCreateFieldInput {
+  node: FolderCreateInput!
+}
+
+input FolderParentFolderConnectFieldInput {
+  where: FolderWhere
+}
+
+input FolderParentFolderUpdateFieldInput {
+  create: [FolderParentFolderCreateFieldInput!]
+  connect: [FolderParentFolderConnectFieldInput!]
+  disconnect: [FolderParentFolderDisconnectFieldInput!]
+  update: FolderParentFolderUpdateConnectionInput
+  delete: [FolderParentFolderDeleteFieldInput!]
+}
+
+input FolderParentFolderDisconnectFieldInput {
+  where: FolderWhere
+}
+
+input FolderParentFolderDeleteFieldInput {
+  where: FolderWhere
+}
+
+input FolderParentFolderUpdateConnectionInput {
+  where: FolderWhere
+  node: FolderUpdateInput
+}
+
+type FolderParentFolderConnection {
+  edges: [FolderParentFolderEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type FolderParentFolderEdge {
+  node: Folder!
+  cursor: String!
+}
+
+input FolderRepositoryFieldInput {
+  create: [FolderRepositoryCreateFieldInput!]
+  connect: [FolderRepositoryConnectFieldInput!]
+}
+
+input FolderRepositoryCreateFieldInput {
+  node: RepositoryCreateInput!
+}
+
+input FolderRepositoryConnectFieldInput {
+  where: RepositoryWhere
+}
+
+input FolderRepositoryUpdateFieldInput {
+  create: [FolderRepositoryCreateFieldInput!]
+  connect: [FolderRepositoryConnectFieldInput!]
+  disconnect: [FolderRepositoryDisconnectFieldInput!]
+  update: FolderRepositoryUpdateConnectionInput
+  delete: [FolderRepositoryDeleteFieldInput!]
+}
+
+input FolderRepositoryDisconnectFieldInput {
+  where: RepositoryWhere
+}
+
+input FolderRepositoryDeleteFieldInput {
+  where: RepositoryWhere
+}
+
+input FolderRepositoryUpdateConnectionInput {
+  where: RepositoryWhere
+  node: RepositoryUpdateInput
+}
+
+type FolderRepositoryConnection {
+  edges: [FolderRepositoryEdge!]!
+  pageInfo: PageInfo!
+  totalCount: Int!
+}
+
+type FolderRepositoryEdge {
+  node: Repository!
+  cursor: String!
+}
+
 input FunctionCallsFieldInput {
   create: [FunctionCallsCreateFieldInput!]
   connect: [FunctionCallsConnectFieldInput!]
@@ -2937,51 +2982,6 @@ type FunctionRepositoryEdge {
   cursor: String!
 }
 
-input ExternalReferenceRepositoryFieldInput {
-  create: [ExternalReferenceRepositoryCreateFieldInput!]
-  connect: [ExternalReferenceRepositoryConnectFieldInput!]
-}
-
-input ExternalReferenceRepositoryCreateFieldInput {
-  node: RepositoryCreateInput!
-}
-
-input ExternalReferenceRepositoryConnectFieldInput {
-  where: RepositoryWhere
-}
-
-input ExternalReferenceRepositoryUpdateFieldInput {
-  create: [ExternalReferenceRepositoryCreateFieldInput!]
-  connect: [ExternalReferenceRepositoryConnectFieldInput!]
-  disconnect: [ExternalReferenceRepositoryDisconnectFieldInput!]
-  update: ExternalReferenceRepositoryUpdateConnectionInput
-  delete: [ExternalReferenceRepositoryDeleteFieldInput!]
-}
-
-input ExternalReferenceRepositoryDisconnectFieldInput {
-  where: RepositoryWhere
-}
-
-input ExternalReferenceRepositoryDeleteFieldInput {
-  where: RepositoryWhere
-}
-
-input ExternalReferenceRepositoryUpdateConnectionInput {
-  where: RepositoryWhere
-  node: RepositoryUpdateInput
-}
-
-type ExternalReferenceRepositoryConnection {
-  edges: [ExternalReferenceRepositoryEdge!]!
-  pageInfo: PageInfo!
-  totalCount: Int!
-}
-
-type ExternalReferenceRepositoryEdge {
-  node: Repository!
-  cursor: String!
-}
-
 input ConnectRepositoryFoldersInput {
   from: RepositoryWhere!
   to: FolderWhere!
@@ -2995,56 +2995,6 @@ input ConnectRepositoryFilesInput {
 input ConnectRepositoryModulesInput {
   from: RepositoryWhere!
   to: ModuleWhere!
-}
-
-input ConnectModuleFunctionsInput {
-  from: ModuleWhere!
-  to: FunctionWhere!
-}
-
-input ConnectModuleClassesInput {
-  from: ModuleWhere!
-  to: ClassWhere!
-}
-
-input ConnectModuleDependsOnInput {
-  from: ModuleWhere!
-  to: ModuleWhere!
-}
-
-input ConnectModuleDependedOnByInput {
-  from: ModuleWhere!
-  to: ModuleWhere!
-}
-
-input ConnectModuleImportedByInput {
-  from: ModuleWhere!
-  to: FileWhere!
-}
-
-input ConnectModuleRepositoryInput {
-  from: ModuleWhere!
-  to: RepositoryWhere!
-}
-
-input ConnectFolderSubfoldersInput {
-  from: FolderWhere!
-  to: FolderWhere!
-}
-
-input ConnectFolderFilesInput {
-  from: FolderWhere!
-  to: FileWhere!
-}
-
-input ConnectFolderParentFolderInput {
-  from: FolderWhere!
-  to: FolderWhere!
-}
-
-input ConnectFolderRepositoryInput {
-  from: FolderWhere!
-  to: RepositoryWhere!
 }
 
 input ConnectFileFunctionsInput {
@@ -3117,6 +3067,61 @@ input ConnectClassRepositoryInput {
   to: RepositoryWhere!
 }
 
+input ConnectExternalReferenceRepositoryInput {
+  from: ExternalReferenceWhere!
+  to: RepositoryWhere!
+}
+
+input ConnectModuleFunctionsInput {
+  from: ModuleWhere!
+  to: FunctionWhere!
+}
+
+input ConnectModuleClassesInput {
+  from: ModuleWhere!
+  to: ClassWhere!
+}
+
+input ConnectModuleDependsOnInput {
+  from: ModuleWhere!
+  to: ModuleWhere!
+}
+
+input ConnectModuleDependedOnByInput {
+  from: ModuleWhere!
+  to: ModuleWhere!
+}
+
+input ConnectModuleImportedByInput {
+  from: ModuleWhere!
+  to: FileWhere!
+}
+
+input ConnectModuleRepositoryInput {
+  from: ModuleWhere!
+  to: RepositoryWhere!
+}
+
+input ConnectFolderSubfoldersInput {
+  from: FolderWhere!
+  to: FolderWhere!
+}
+
+input ConnectFolderFilesInput {
+  from: FolderWhere!
+  to: FileWhere!
+}
+
+input ConnectFolderParentFolderInput {
+  from: FolderWhere!
+  to: FolderWhere!
+}
+
+input ConnectFolderRepositoryInput {
+  from: FolderWhere!
+  to: RepositoryWhere!
+}
+
 input ConnectFunctionCallsInput {
   from: FunctionWhere!
   to: FunctionWhere!
@@ -3164,11 +3169,6 @@ input ConnectFunctionRepositoryInput {
   to: RepositoryWhere!
 }
 
-input ConnectExternalReferenceRepositoryInput {
-  from: ExternalReferenceWhere!
-  to: RepositoryWhere!
-}
-
 type DeleteInfo {
   nodesDeleted: Int!
   relationshipsDeleted: Int!
@@ -3193,18 +3193,18 @@ enum SortDirection {
 type Query {
   repositorys(where: RepositoryWhere, sort: [RepositorySort!]): [Repository!]!
   repositorysConnection(first: Int, after: String, where: RepositoryWhere, sort: [RepositorySort!]): RepositorysConnection!
-  modules(where: ModuleWhere, sort: [ModuleSort!]): [Module!]!
-  modulesConnection(first: Int, after: String, where: ModuleWhere, sort: [ModuleSort!]): ModulesConnection!
-  folders(where: FolderWhere, sort: [FolderSort!]): [Folder!]!
-  foldersConnection(first: Int, after: String, where: FolderWhere, sort: [FolderSort!]): FoldersConnection!
   files(where: FileWhere, sort: [FileSort!]): [File!]!
   filesConnection(first: Int, after: String, where: FileWhere, sort: [FileSort!]): FilesConnection!
   classs(where: ClassWhere, sort: [ClassSort!]): [Class!]!
   classsConnection(first: Int, after: String, where: ClassWhere, sort: [ClassSort!]): ClasssConnection!
-  functions(where: FunctionWhere, sort: [FunctionSort!]): [Function!]!
-  functionsConnection(first: Int, after: String, where: FunctionWhere, sort: [FunctionSort!]): FunctionsConnection!
   externalReferences(where: ExternalReferenceWhere, sort: [ExternalReferenceSort!]): [ExternalReference!]!
   externalReferencesConnection(first: Int, after: String, where: ExternalReferenceWhere, sort: [ExternalReferenceSort!]): ExternalReferencesConnection!
+  modules(where: ModuleWhere, sort: [ModuleSort!]): [Module!]!
+  modulesConnection(first: Int, after: String, where: ModuleWhere, sort: [ModuleSort!]): ModulesConnection!
+  folders(where: FolderWhere, sort: [FolderSort!]): [Folder!]!
+  foldersConnection(first: Int, after: String, where: FolderWhere, sort: [FolderSort!]): FoldersConnection!
+  functions(where: FunctionWhere, sort: [FunctionSort!]): [Function!]!
+  functionsConnection(first: Int, after: String, where: FunctionWhere, sort: [FunctionSort!]): FunctionsConnection!
 }
 
 type Mutation {
@@ -3212,14 +3212,6 @@ type Mutation {
   updateRepositorys(where: RepositoryWhere, update: RepositoryUpdateInput): UpdateRepositorysMutationResponse!
   deleteRepositorys(where: RepositoryWhere): DeleteInfo!
   mergeRepositorys(input: [RepositoryMergeInput!]!): MergeRepositorysMutationResponse!
-  createModules(input: [ModuleCreateInput!]!): CreateModulesMutationResponse!
-  updateModules(where: ModuleWhere, update: ModuleUpdateInput): UpdateModulesMutationResponse!
-  deleteModules(where: ModuleWhere): DeleteInfo!
-  mergeModules(input: [ModuleMergeInput!]!): MergeModulesMutationResponse!
-  createFolders(input: [FolderCreateInput!]!): CreateFoldersMutationResponse!
-  updateFolders(where: FolderWhere, update: FolderUpdateInput): UpdateFoldersMutationResponse!
-  deleteFolders(where: FolderWhere): DeleteInfo!
-  mergeFolders(input: [FolderMergeInput!]!): MergeFoldersMutationResponse!
   createFiles(input: [FileCreateInput!]!): CreateFilesMutationResponse!
   updateFiles(where: FileWhere, update: FileUpdateInput): UpdateFilesMutationResponse!
   deleteFiles(where: FileWhere): DeleteInfo!
@@ -3228,27 +3220,25 @@ type Mutation {
   updateClasss(where: ClassWhere, update: ClassUpdateInput): UpdateClasssMutationResponse!
   deleteClasss(where: ClassWhere): DeleteInfo!
   mergeClasss(input: [ClassMergeInput!]!): MergeClasssMutationResponse!
-  createFunctions(input: [FunctionCreateInput!]!): CreateFunctionsMutationResponse!
-  updateFunctions(where: FunctionWhere, update: FunctionUpdateInput): UpdateFunctionsMutationResponse!
-  deleteFunctions(where: FunctionWhere): DeleteInfo!
-  mergeFunctions(input: [FunctionMergeInput!]!): MergeFunctionsMutationResponse!
   createExternalReferences(input: [ExternalReferenceCreateInput!]!): CreateExternalReferencesMutationResponse!
   updateExternalReferences(where: ExternalReferenceWhere, update: ExternalReferenceUpdateInput): UpdateExternalReferencesMutationResponse!
   deleteExternalReferences(where: ExternalReferenceWhere): DeleteInfo!
   mergeExternalReferences(input: [ExternalReferenceMergeInput!]!): MergeExternalReferencesMutationResponse!
+  createModules(input: [ModuleCreateInput!]!): CreateModulesMutationResponse!
+  updateModules(where: ModuleWhere, update: ModuleUpdateInput): UpdateModulesMutationResponse!
+  deleteModules(where: ModuleWhere): DeleteInfo!
+  mergeModules(input: [ModuleMergeInput!]!): MergeModulesMutationResponse!
+  createFolders(input: [FolderCreateInput!]!): CreateFoldersMutationResponse!
+  updateFolders(where: FolderWhere, update: FolderUpdateInput): UpdateFoldersMutationResponse!
+  deleteFolders(where: FolderWhere): DeleteInfo!
+  mergeFolders(input: [FolderMergeInput!]!): MergeFoldersMutationResponse!
+  createFunctions(input: [FunctionCreateInput!]!): CreateFunctionsMutationResponse!
+  updateFunctions(where: FunctionWhere, update: FunctionUpdateInput): UpdateFunctionsMutationResponse!
+  deleteFunctions(where: FunctionWhere): DeleteInfo!
+  mergeFunctions(input: [FunctionMergeInput!]!): MergeFunctionsMutationResponse!
   connectRepositoryFolders(input: [ConnectRepositoryFoldersInput!]!): ConnectInfo!
   connectRepositoryFiles(input: [ConnectRepositoryFilesInput!]!): ConnectInfo!
   connectRepositoryModules(input: [ConnectRepositoryModulesInput!]!): ConnectInfo!
-  connectModuleFunctions(input: [ConnectModuleFunctionsInput!]!): ConnectInfo!
-  connectModuleClasses(input: [ConnectModuleClassesInput!]!): ConnectInfo!
-  connectModuleDependsOn(input: [ConnectModuleDependsOnInput!]!): ConnectInfo!
-  connectModuleDependedOnBy(input: [ConnectModuleDependedOnByInput!]!): ConnectInfo!
-  connectModuleImportedBy(input: [ConnectModuleImportedByInput!]!): ConnectInfo!
-  connectModuleRepository(input: [ConnectModuleRepositoryInput!]!): ConnectInfo!
-  connectFolderSubfolders(input: [ConnectFolderSubfoldersInput!]!): ConnectInfo!
-  connectFolderFiles(input: [ConnectFolderFilesInput!]!): ConnectInfo!
-  connectFolderParentFolder(input: [ConnectFolderParentFolderInput!]!): ConnectInfo!
-  connectFolderRepository(input: [ConnectFolderRepositoryInput!]!): ConnectInfo!
   connectFileFunctions(input: [ConnectFileFunctionsInput!]!): ConnectInfo!
   connectFileClasses(input: [ConnectFileClassesInput!]!): ConnectInfo!
   connectFileImports(input: [ConnectFileImportsInput!]!): ConnectInfo!
@@ -3263,6 +3253,17 @@ type Mutation {
   connectClassDefinedIn(input: [ConnectClassDefinedInInput!]!): ConnectInfo!
   connectClassModule(input: [ConnectClassModuleInput!]!): ConnectInfo!
   connectClassRepository(input: [ConnectClassRepositoryInput!]!): ConnectInfo!
+  connectExternalReferenceRepository(input: [ConnectExternalReferenceRepositoryInput!]!): ConnectInfo!
+  connectModuleFunctions(input: [ConnectModuleFunctionsInput!]!): ConnectInfo!
+  connectModuleClasses(input: [ConnectModuleClassesInput!]!): ConnectInfo!
+  connectModuleDependsOn(input: [ConnectModuleDependsOnInput!]!): ConnectInfo!
+  connectModuleDependedOnBy(input: [ConnectModuleDependedOnByInput!]!): ConnectInfo!
+  connectModuleImportedBy(input: [ConnectModuleImportedByInput!]!): ConnectInfo!
+  connectModuleRepository(input: [ConnectModuleRepositoryInput!]!): ConnectInfo!
+  connectFolderSubfolders(input: [ConnectFolderSubfoldersInput!]!): ConnectInfo!
+  connectFolderFiles(input: [ConnectFolderFilesInput!]!): ConnectInfo!
+  connectFolderParentFolder(input: [ConnectFolderParentFolderInput!]!): ConnectInfo!
+  connectFolderRepository(input: [ConnectFolderRepositoryInput!]!): ConnectInfo!
   connectFunctionCalls(input: [ConnectFunctionCallsInput!]!): ConnectInfo!
   connectFunctionCalledBy(input: [ConnectFunctionCalledByInput!]!): ConnectInfo!
   connectFunctionExternalCalls(input: [ConnectFunctionExternalCallsInput!]!): ConnectInfo!
@@ -3272,6 +3273,5 @@ type Mutation {
   connectFunctionClass(input: [ConnectFunctionClassInput!]!): ConnectInfo!
   connectFunctionModule(input: [ConnectFunctionModuleInput!]!): ConnectInfo!
   connectFunctionRepository(input: [ConnectFunctionRepositoryInput!]!): ConnectInfo!
-  connectExternalReferenceRepository(input: [ConnectExternalReferenceRepositoryInput!]!): ConnectInfo!
 }
 

@@ -59,7 +59,7 @@ func TestWritePass1_AcceptsClient(t *testing.T) {
 		t.Fatalf("ForRepo returned error: %v", err)
 	}
 
-	err = analyzer.writePass1(context.Background(), c, "test-repo", analyses)
+	err = analyzer.writePass1(context.Background(), c, "test-repo", "/tmp/test-repo", analyses)
 	if err != nil {
 		t.Fatalf("writePass1 returned error: %v", err)
 	}
