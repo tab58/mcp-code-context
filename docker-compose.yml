@@ -1,0 +1,14 @@
+services:
+  falkordb:
+    image: falkordb/falkordb:latest
+    ports: # host:container port mapping
+      - "6379:6379"
+      - "3030:3000"
+    volumes:
+      - falkordb_data:/data
+    mem_limit: 4g
+    environment:
+      - REDIS_ARGS=--requirepass password
+
+volumes:
+  falkordb_data:

@@ -1,0 +1,115 @@
+# ==========================================================
+# Cross-Repository Code Knowledge Graph
+# ==========================================================
+
+scalar DateTime
+
+type Repository @node {
+  id: ID!
+  name: String!
+  path: String
+  remoteUrl: String
+  primaryLanguage: String
+  lastIndexed: DateTime!
+  folders: [Folder!]! @relationship(type: "CONTAINS", direction: OUT)
+  files: [File!]! @relationship(type: "CONTAINS", direction: OUT)
+  modules: [Module!]! @relationship(type: "HAS_MODULE", direction: OUT)
+}
+
+type Folder @node {
+  id: ID!
+  path: String!
+  lastUpdated: DateTime!
+  subfolders: [Folder!]! @relationship(type: "CONTAINS", direction: OUT)
+  files: [File!]! @relationship(type: "CONTAINS", direction: OUT)
+  parentFolder: Folder @relationship(type: "CONTAINS", direction: IN)
+  repository: Repository! @relationship(type: "BELONGS_TO", direction: OUT)
+}
+
+type File @node {
+  id: ID!
+  path: String!
+  filename: String
+  language: String
+  lineCount: Int
+  lastUpdated: DateTime!
+  functions: [Function!]! @relationship(type: "DEFINES", direction: OUT)
+  classes: [Class!]! @relationship(type: "DEFINES", direction: OUT)
+  imports: [Module!]! @relationship(type: "IMPORTS", direction: OUT)
+  externalImports: [ExternalReference!]! @relationship(type: "IMPORTS", direction: OUT)
+  folder: Folder @relationship(type: "CONTAINS", direction: IN)
+  repository: Repository! @relationship(type: "BELONGS_TO", direction: OUT)
+}
+
+type Module @node {
+  id: ID!
+  name: String!
+  path: String!
+  language: String
+  importPath: String
+  visibility: String
+  kind: String
+  startingLine: Int
+  endingLine: Int
+  functions: [Function!]! @relationship(type: "EXPORTS", direction: OUT)
+  classes: [Class!]! @relationship(type: "EXPORTS", direction: OUT)
+  dependsOn: [Module!]! @relationship(type: "DEPENDS_ON", direction: OUT)
+  dependedOnBy: [Module!]! @relationship(type: "DEPENDS_ON", direction: IN)
+  importedBy: [File!]! @relationship(type: "IMPORTS", direction: IN)
+  repository: Repository! @relationship(type: "BELONGS_TO", direction: OUT)
+}
+
+type Class @node {
+  id: ID!
+  name: String!
+  path: String!
+  language: String
+  kind: String!
+  visibility: String
+  source: String
+  startingLine: Int
+  endingLine: Int
+  decorators: [String!]
+  methods: [Function!]! @relationship(type: "HAS_METHOD", direction: OUT)
+  inherits: [Class!]! @relationship(type: "INHERITS", direction: OUT)
+  inheritedBy: [Class!]! @relationship(type: "INHERITS", direction: IN)
+  implements: [Class!]! @relationship(type: "IMPLEMENTS", direction: OUT)
+  implementedBy: [Class!]! @relationship(type: "IMPLEMENTS", direction: IN)
+  definedIn: File! @relationship(type: "DEFINES", direction: IN)
+  module: Module @relationship(type: "EXPORTS", direction: IN)
+  repository: Repository! @relationship(type: "BELONGS_TO", direction: OUT)
+}
+
+type Function @node {
+  id: ID!
+  name: String!
+  path: String!
+  language: String
+  signature: String
+  visibility: String
+  source: String
+  startingLine: Int
+  endingLine: Int
+  cyclomaticComplexity: Int
+  decorators: [String!]
+  calls: [Function!]! @relationship(type: "CALLS", direction: OUT, properties: "CallProperties")
+  calledBy: [Function!]! @relationship(type: "CALLS", direction: IN, properties: "CallProperties")
+  externalCalls: [ExternalReference!]! @relationship(type: "CALLS", direction: OUT)
+  overrides: [Function!]! @relationship(type: "OVERRIDES", direction: OUT)
+  overriddenBy: [Function!]! @relationship(type: "OVERRIDES", direction: IN)
+  definedIn: File! @relationship(type: "DEFINES", direction: IN)
+  class: Class @relationship(type: "HAS_METHOD", direction: IN)
+  module: Module @relationship(type: "EXPORTS", direction: IN)
+  repository: Repository! @relationship(type: "BELONGS_TO", direction: OUT)
+}
+
+type ExternalReference @node {
+  id: ID!
+  name: String!
+  importPath: String!
+  repository: Repository! @relationship(type: "BELONGS_TO", direction: OUT)
+}
+
+type CallProperties @relationshipProperties {
+  callType: String
+}

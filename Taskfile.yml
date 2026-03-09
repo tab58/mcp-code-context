@@ -1,0 +1,43 @@
+# yaml-language-server: $schema=https://taskfile.dev/schema.json
+
+version: "3"
+
+tasks:
+  env-up:
+    desc: Update the environment variables
+    cmds:
+      - docker compose up -d
+    silent: true
+
+  env-down:
+    desc: Stop the environment
+    cmds:
+      - docker compose down
+    silent: true
+
+  update:
+    desc: Update the dependencies
+    cmds:
+      - git submodule update --init --recursive
+    silent: true
+
+  build:
+    desc: Build the project
+    deps: [build-cctx]
+    silent: true
+
+  generate:
+    desc: Generate go-ormql code from schema
+    cmds:
+      - gormql generate --target falkordb -schema internal/clients/code_db/schema.graphql -output internal/clients/code_db/generated -package generated
+    silent: true
+
+  build-cctx:
+    desc: Generate code and build the project
+    deps: [generate]
+    env:
+      CGO_ENABLED: "1"
+    cmds:
+      - mkdir -p build
+      - go build -o build/codectx ./cmd/codectx/main.go
+    silent: true
