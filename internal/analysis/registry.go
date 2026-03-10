@@ -19,8 +19,9 @@ type Language struct {
 
 // Registry maps file extensions to language grammars and extractors.
 type Registry struct {
-	languages  map[string]*Language // ".go" -> Language
-	extractors map[string]Extractor // "go" -> GoExtractor
+	languages            map[string]*Language          // ".go" -> Language
+	extractors           map[string]Extractor          // "go" -> GoExtractor
+	complexityExtractors map[string]ComplexityExtractor // "go" -> GoComplexityExtractor
 }
 
 // NewRegistry creates a Registry with Go, TypeScript, and TSX grammars
@@ -29,8 +30,9 @@ type Registry struct {
 // (e.g., golang.Register, typescript.Register).
 func NewRegistry() *Registry {
 	r := &Registry{
-		languages:  make(map[string]*Language),
-		extractors: make(map[string]Extractor),
+		languages:            make(map[string]*Language),
+		extractors:           make(map[string]Extractor),
+		complexityExtractors: make(map[string]ComplexityExtractor),
 	}
 
 	r.registerLanguage(Language{Name: "go", Extensions: []string{".go"}, Grammar: golang.GetLanguage()})
@@ -73,5 +75,16 @@ func (r *Registry) LanguageForFile(path string) (*Language, bool) {
 // ExtractorForLanguage returns the Extractor for a given language name.
 func (r *Registry) ExtractorForLanguage(name string) (Extractor, bool) {
 	ext, ok := r.extractors[name]
+	return ext, ok
+}
+
+// RegisterComplexityExtractor registers a ComplexityExtractor for a language by name.
+func (r *Registry) RegisterComplexityExtractor(langName string, ext ComplexityExtractor) {
+	r.complexityExtractors[langName] = ext
+}
+
+// ComplexityExtractorForLanguage returns the ComplexityExtractor for a given language.
+func (r *Registry) ComplexityExtractorForLanguage(name string) (ComplexityExtractor, bool) {
+	ext, ok := r.complexityExtractors[name]
 	return ext, ok
 }

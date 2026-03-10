@@ -2,13 +2,11 @@ package mcp
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"path/filepath"
 	"strings"
 
-	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/tab58/go-ormql/pkg/client"
 )
 
@@ -80,69 +78,42 @@ func isFilePath(name string) bool {
 	return ext != ""
 }
 
-// parseFunctionResult creates a TraversalResult from a function query response map.
-func parseFunctionResult(m map[string]any, depth int, edgeType, direction string) TraversalResult {
-	return TraversalResult{
-		Type:      "function",
-		Name:      strVal(m, "name"),
-		Path:      strVal(m, "path"),
-		Signature: strVal(m, "signature"),
-		Language:  strVal(m, "language"),
-		Depth:     depth,
-		EdgeType:  edgeType,
-		Direction: direction,
+// parseNodeResult creates a TraversalResult from a query response map.
+// nodeType determines which fields are populated:
+//   - "function": Name from "name", Signature from "signature"
+//   - "class"/"module": Name from "name", Kind from "kind"
+//   - "file": Name from "path" (no "name" field on File nodes)
+func parseNodeResult(nodeType string) func(map[string]any, int, string, string) TraversalResult {
+	return func(m map[string]any, depth int, edgeType, direction string) TraversalResult {
+		r := TraversalResult{
+			Type:      nodeType,
+			Path:      strVal(m, "path"),
+			Language:  strVal(m, "language"),
+			Depth:     depth,
+			EdgeType:  edgeType,
+			Direction: direction,
+		}
+		switch nodeType {
+		case "function":
+			r.Name = strVal(m, "name")
+			r.Signature = strVal(m, "signature")
+		case "file":
+			r.Name = strVal(m, "path")
+		default: // class, module
+			r.Name = strVal(m, "name")
+			r.Kind = strVal(m, "kind")
+		}
+		return r
 	}
 }
 
-// parseClassResult creates a TraversalResult from a class query response map.
-func parseClassResult(m map[string]any, depth int, edgeType, direction string) TraversalResult {
-	return TraversalResult{
-		Type:      "class",
-		Name:      strVal(m, "name"),
-		Path:      strVal(m, "path"),
-		Kind:      strVal(m, "kind"),
-		Language:  strVal(m, "language"),
-		Depth:     depth,
-		EdgeType:  edgeType,
-		Direction: direction,
-	}
-}
-
-// parseModuleResult creates a TraversalResult from a module query response map.
-func parseModuleResult(m map[string]any, depth int, edgeType, direction string) TraversalResult {
-	return TraversalResult{
-		Type:      "module",
-		Name:      strVal(m, "name"),
-		Path:      strVal(m, "path"),
-		Kind:      strVal(m, "kind"),
-		Language:  strVal(m, "language"),
-		Depth:     depth,
-		EdgeType:  edgeType,
-		Direction: direction,
-	}
-}
-
-// parseFileResult creates a TraversalResult from a file query response map.
-func parseFileResult(m map[string]any, depth int, edgeType, direction string) TraversalResult {
-	return TraversalResult{
-		Type:      "file",
-		Name:      strVal(m, "path"),
-		Path:      strVal(m, "path"),
-		Language:  strVal(m, "language"),
-		Depth:     depth,
-		EdgeType:  edgeType,
-		Direction: direction,
-	}
-}
-
-// toTraversalMCPResult converts a TraversalResponse to an MCP CallToolResult.
-func toTraversalMCPResult(resp *TraversalResponse) (*mcp.CallToolResult, error) {
-	data, err := json.Marshal(resp)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal traversal response: %w", err)
-	}
-	return mcp.NewToolResultText(string(data)), nil
-}
+// Pre-built parse functions for each node type.
+var (
+	parseFunctionResult = parseNodeResult("function")
+	parseClassResult    = parseNodeResult("class")
+	parseModuleResult   = parseNodeResult("module")
+	parseFileResult     = parseNodeResult("file")
+)
 
 // traverseHops performs iterative multi-hop graph traversal.
 // At each depth level it queries for neighbors matching the WHERE key,

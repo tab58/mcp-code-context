@@ -102,7 +102,7 @@ func TestMaxTraversalDepth(t *testing.T) {
 
 // === Task 2: traversal.go infrastructure ===
 //
-// Verifies clampDepth, isFilePath, parse functions, and toTraversalMCPResult.
+// Verifies clampDepth, isFilePath, parse functions, and marshalMCPResult.
 
 // TestClampDepth verifies that clampDepth constrains depth to [1, maxTraversalDepth].
 // Expected result: 0 -> 1, negative -> 1, 1 -> 1, 3 -> 3, 4 -> 3.
@@ -274,10 +274,10 @@ func TestParseFunctionResult_MissingFields(t *testing.T) {
 	}
 }
 
-// TestToTraversalMCPResult verifies that toTraversalMCPResult marshals
+// TestMarshalMCPResult_Traversal verifies that marshalMCPResult marshals
 // a TraversalResponse into a valid MCP CallToolResult with JSON content.
 // Expected result: non-nil result with JSON text content.
-func TestToTraversalMCPResult(t *testing.T) {
+func TestMarshalMCPResult_Traversal(t *testing.T) {
 	resp := &TraversalResponse{
 		Results: []TraversalResult{
 			{Type: "function", Name: "a", Path: "b", Depth: 1},
@@ -287,12 +287,12 @@ func TestToTraversalMCPResult(t *testing.T) {
 		Depth:  1,
 	}
 
-	result, err := toTraversalMCPResult(resp)
+	result, err := marshalMCPResult(resp)
 	if err != nil {
-		t.Fatalf("toTraversalMCPResult returned error: %v", err)
+		t.Fatalf("marshalMCPResult returned error: %v", err)
 	}
 	if result == nil {
-		t.Fatal("toTraversalMCPResult returned nil result")
+		t.Fatal("marshalMCPResult returned nil result")
 	}
 }
 

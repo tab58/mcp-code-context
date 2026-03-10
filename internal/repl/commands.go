@@ -54,6 +54,13 @@ func (r *REPL) handleIngest(ctx context.Context, args []string) error {
 		}
 	}
 
+	// Step 3: Compute complexity
+	if r.pipeline.Analyzer != nil {
+		if err := r.pipeline.Analyzer.ComputeComplexity(ctx, result.RepoID, path, result.FilePaths); err != nil {
+			return fmt.Errorf("complexity computation failed: %w", err)
+		}
+	}
+
 	fmt.Fprintf(r.out, "done: indexed %d files, %d folders", result.FilesIndexed, result.FoldersIndexed)
 	if analyzeResult != nil {
 		fmt.Fprintf(r.out, ", analyzed %d symbols", analyzeResult.Symbols)
@@ -91,10 +98,30 @@ func (r *REPL) handleList(ctx context.Context) error {
 	return nil
 }
 
+// handleDelete removes all graph data for a named repository.
+func (r *REPL) handleDelete(ctx context.Context, args []string) error {
+	if len(args) == 0 {
+		return errors.New("usage: delete <repository>")
+	}
+
+	name := args[0]
+	if r.pipeline.DB == nil {
+		return errors.New("not connected to database")
+	}
+
+	if err := r.pipeline.DB.DeleteRepo(ctx, name); err != nil {
+		return fmt.Errorf("failed to delete repository: %w", err)
+	}
+
+	fmt.Fprintf(r.out, "deleted repository %q\n", name)
+	return nil
+}
+
 // handleHelp prints the command listing to stdout.
 func (r *REPL) handleHelp() {
 	fmt.Fprintln(r.out, "Available commands:")
-	fmt.Fprintln(r.out, "  ingest <path>  Run full pipeline (index -> analyze) on a local directory")
+	fmt.Fprintln(r.out, "  ingest <path>  Run full pipeline (index -> analyze -> compute complexity) on a local directory")
+	fmt.Fprintln(r.out, "  delete <name>  Delete all graph data for a repository")
 	fmt.Fprintln(r.out, "  status         Display current configuration")
 	fmt.Fprintln(r.out, "  list           List indexed repositories")
 	fmt.Fprintln(r.out, "  help           Show this help message")

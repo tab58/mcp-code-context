@@ -197,15 +197,20 @@ func TestHandleFindFile_NoMatch(t *testing.T) {
 // Classifies query, dispatches to file/exact strategy.
 // Exact falls back to exact supplement on no results.
 
-// TestHandleSearchCode_FileStrategy verifies that search_code dispatches
-// glob-like queries to the file strategy.
-// Expected result: strategy="file" in response.
+// TestHandleSearchCode_FuzzyStrategy verifies that search_code dispatches
+// glob-like queries to the fuzzy strategy (Levenshtein).
+// Expected result: strategy="fuzzy" in response.
 func TestHandleSearchCode_FileStrategy(t *testing.T) {
 	s, _ := newTestServerWithResponses(t, []driver.Result{
+		// Functions response for fuzzy search
 		makeResult(map[string]any{
-			"files": []any{
-				map[string]any{"name": "main.go", "path": "cmd/main.go", "language": "go", "lineCount": float64(50)},
+			"functions": []any{
+				map[string]any{"name": "go", "path": "cmd/main.go", "signature": "func go()", "language": "go"},
 			},
+		}),
+		// Classes response for fuzzy search
+		makeResult(map[string]any{
+			"classs": []any{},
 		}),
 	})
 
@@ -216,8 +221,8 @@ func TestHandleSearchCode_FileStrategy(t *testing.T) {
 	if resp == nil {
 		t.Fatal("handleSearchCode returned nil response")
 	}
-	if resp.Strategy != "file" {
-		t.Errorf("response.Strategy = %q, want %q for glob query", resp.Strategy, "file")
+	if resp.Strategy != "fuzzy" {
+		t.Errorf("response.Strategy = %q, want %q for glob query", resp.Strategy, "fuzzy")
 	}
 }
 

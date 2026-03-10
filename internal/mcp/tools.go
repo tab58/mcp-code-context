@@ -17,7 +17,7 @@ const defaultLimit = 10
 // GraphQL query constants for tool handlers.
 const (
 	gqlFindFunctions = `query($where: FunctionWhere) {
-  functions(where: $where) { name path source signature language visibility startingLine endingLine }
+  functions(where: $where) { name path signature language visibility startingLine endingLine }
 }`
 
 	gqlListFiles = `query($where: FileWhere) {
@@ -72,7 +72,6 @@ func (s *Server) handleFindFunction(ctx context.Context, repo, name string) (*Se
 				Type:         "function",
 				Name:         strVal(m, "name"),
 				Path:         strVal(m, "path"),
-				Source:       strVal(m, "source"),
 				Signature:    strVal(m, "signature"),
 				Language:     strVal(m, "language"),
 				Visibility:   strVal(m, "visibility"),
@@ -226,6 +225,9 @@ func (s *Server) handleSearchCode(ctx context.Context, repo, query string, limit
 	switch strat {
 	case strategyFile:
 		return s.handleFindFile(ctx, repo, query)
+
+	case strategyFuzzy:
+		return s.executeFuzzySearch(ctx, repo, query, limit)
 
 	case strategyExact:
 		resp, err := s.handleFindFunction(ctx, repo, query)

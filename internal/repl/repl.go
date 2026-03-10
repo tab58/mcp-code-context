@@ -121,6 +121,10 @@ func (r *REPL) Run(ctx context.Context) error {
 				if err := r.handleIngest(ctx, args); err != nil {
 					fmt.Fprintf(r.out, "error: %v\n", err)
 				}
+			case "delete":
+				if err := r.handleDelete(ctx, args); err != nil {
+					fmt.Fprintf(r.out, "error: %v\n", err)
+				}
 			default:
 				fmt.Fprintf(r.out, "unknown command %q. Type \"help\" for available commands.\n", cmd)
 			}

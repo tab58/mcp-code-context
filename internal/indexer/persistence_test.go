@@ -364,8 +364,8 @@ func TestUpsertRepository_NilContext(t *testing.T) {
 // TestCreateNodes_DriverWriteError verifies that createNodes returns an error
 // when the driver fails during a write.
 func TestCreateNodes_DriverWriteError(t *testing.T) {
-	// CreateIndexes is a no-op (0 writes), then fail on first write
-	idx := newFailAfterNIndexer(t, 0, context.DeadlineExceeded)
+	// createIndexes issues 11 range index writes, then fail on next write
+	idx := newFailAfterNIndexer(t, 11, context.DeadlineExceeded)
 
 	folders := []pendingFolder{
 		{Path: "src", ParentPath: "", ModTime: time.Now()},
@@ -380,8 +380,8 @@ func TestCreateNodes_DriverWriteError(t *testing.T) {
 // TestCreateEdges_DriverWriteError verifies that createEdges returns an error
 // when the driver fails during ExecuteWrite.
 func TestCreateEdges_DriverWriteError(t *testing.T) {
-	// CreateIndexes is a no-op (0 writes), then fail on first write
-	idx := newFailAfterNIndexer(t, 0, context.DeadlineExceeded)
+	// createIndexes issues 11 range index writes, then fail on next write
+	idx := newFailAfterNIndexer(t, 11, context.DeadlineExceeded)
 
 	folders := []pendingFolder{
 		{Path: "src", ParentPath: "", ModTime: time.Now()},
@@ -449,8 +449,8 @@ func TestIndexRepository_PermissionDenied_CollectsErrors(t *testing.T) {
 func TestIndexRepository_MidBatchFailure_ReturnsError(t *testing.T) {
 	repoPath := createPersistenceTestRepo(t)
 
-	// CreateIndexes is a no-op (0 vector indexes), so fail on first indexer write
-	idx := newFailAfterNIndexer(t, 0, context.DeadlineExceeded)
+	// createIndexes issues 11 range index writes, then fail on next indexer write
+	idx := newFailAfterNIndexer(t, 11, context.DeadlineExceeded)
 
 	_, err := idx.IndexRepository(context.Background(), repoPath)
 	if err == nil {

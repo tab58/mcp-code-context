@@ -3,6 +3,7 @@ module github.com/tab58/code-context
 go 1.25
 
 require (
+	github.com/agnivade/levenshtein v1.2.1
 	github.com/joho/godotenv v1.5.1
 	github.com/mark3labs/mcp-go v0.44.1
 	github.com/sabhiram/go-gitignore v0.0.0-20210923224102-525f6e181f06
@@ -16,7 +17,6 @@ require (
 	github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1 // indirect
 	github.com/FalkorDB/falkordb-go/v2 v2.1.0 // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
-	github.com/agnivade/levenshtein v1.2.1 // indirect
 	github.com/bahlo/generic-list-go v0.2.0 // indirect
 	github.com/buger/jsonparser v1.1.1 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect

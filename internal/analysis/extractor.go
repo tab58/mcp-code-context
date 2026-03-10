@@ -16,3 +16,11 @@ type Extractor interface {
 	// to classify imports as internal vs external (e.g., reading go.mod module name).
 	ExtractReferences(tree *sitter.Tree, source []byte, filePath string, repoPath string) ([]Reference, error)
 }
+
+// ComplexityExtractor computes cyclomatic complexity for function AST subtrees.
+// Each supported language implements this interface.
+type ComplexityExtractor interface {
+	// ComputeComplexity walks the function's AST subtree and counts decision points.
+	// Returns base complexity of 1 + count of decision nodes.
+	ComputeComplexity(node *sitter.Node, source []byte) int
+}

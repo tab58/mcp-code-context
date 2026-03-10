@@ -9,10 +9,13 @@ import (
 )
 
 // Register registers the TypeScript and TSX language extractors
-// with the given registry.
+// and complexity extractors with the given registry.
 func Register(r *analysis.Registry) {
 	r.RegisterExtractor("typescript", NewTypeScriptExtractor())
 	r.RegisterExtractor("tsx", NewTSXExtractor())
+	ce := NewTSComplexityExtractor()
+	r.RegisterComplexityExtractor("typescript", ce)
+	r.RegisterComplexityExtractor("tsx", ce)
 }
 
 // TypeScriptExtractor implements the Extractor interface for TypeScript source files.

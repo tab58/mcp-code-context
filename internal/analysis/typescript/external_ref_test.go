@@ -94,18 +94,12 @@ func TestTSExtractor_NormalizesMemberExpression(t *testing.T) {
 		t.Fatalf("ExtractReferences error: %v", err)
 	}
 
-	found := false
 	for _, ref := range refs {
-		if ref.Kind == "calls" && ref.ToName == "log" {
-			found = true
-		}
 		if ref.Kind == "calls" && ref.ToName == "console.log" {
-			t.Error("member_expression not normalized — ToName should be 'log', not 'console.log'")
+			t.Error("member_expression not normalized — should be filtered or bare property name, not 'console.log'")
 		}
 	}
-	if !found {
-		t.Error("expected normalized call reference to 'log' (from console.log)")
-	}
+	// console.log is normalized to "log" which is in jsBuiltins, so it gets filtered.
 }
 
 // TestTSExtractor_SkipsAnonymousFunctionCalls verifies that anonymous

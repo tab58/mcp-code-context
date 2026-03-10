@@ -12,8 +12,8 @@ import (
 // (first match wins). This is a pure function with no DB dependency.
 
 // TestClassifyQuery_GlobChars verifies Rule 1: queries containing glob
-// characters (*, ?, **) are classified as file strategy.
-// Expected result: strategyFile for all glob patterns.
+// characters (*, ?, **) are classified as fuzzy strategy (Levenshtein).
+// Expected result: strategyFuzzy for all glob patterns.
 func TestClassifyQuery_GlobChars(t *testing.T) {
 	tests := []struct {
 		name  string
@@ -30,8 +30,8 @@ func TestClassifyQuery_GlobChars(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := classifyQuery(tt.query)
-			if got != strategyFile {
-				t.Errorf("classifyQuery(%q) = %v, want strategyFile", tt.query, got)
+			if got != strategyFuzzy {
+				t.Errorf("classifyQuery(%q) = %v, want strategyFuzzy", tt.query, got)
 			}
 		})
 	}
@@ -160,10 +160,10 @@ func TestClassifyQuery_EdgeCases(t *testing.T) {
 
 // TestClassifyQuery_GlobWinsOverExact verifies that glob characters take
 // priority over identifier patterns (Rule 1 > Rule 3/4).
-// Expected result: "*" is classified as file, not exact.
+// Expected result: "*" is classified as fuzzy, not exact.
 func TestClassifyQuery_GlobWinsOverExact(t *testing.T) {
 	got := classifyQuery("*")
-	if got != strategyFile {
-		t.Errorf("classifyQuery(\"*\") = %v, want strategyFile (glob should win over exact)", got)
+	if got != strategyFuzzy {
+		t.Errorf("classifyQuery(\"*\") = %v, want strategyFuzzy (glob should win over exact)", got)
 	}
 }

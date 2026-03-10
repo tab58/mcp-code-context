@@ -111,12 +111,12 @@ func TestCctxignoreNested(t *testing.T) {
 	// Enter the internal/ directory
 	m.EnterDirectory(subdir)
 
-	// After entering internal/, "generated" should be ignored
-	if !m.ShouldIgnore("generated", true) {
-		t.Error("generated should be ignored after EnterDirectory loads nested .cctxignore")
+	// After entering internal/, "internal/generated" should be ignored
+	if !m.ShouldIgnore("internal/generated", true) {
+		t.Error("internal/generated should be ignored after EnterDirectory loads nested .cctxignore")
 	}
-	if m.ShouldIgnore("core", true) {
-		t.Error("core should not be ignored")
+	if m.ShouldIgnore("internal/core", true) {
+		t.Error("internal/core should not be ignored")
 	}
 }
 

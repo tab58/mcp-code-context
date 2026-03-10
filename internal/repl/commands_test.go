@@ -305,6 +305,94 @@ func TestHandleList_WithRepositories(t *testing.T) {
 }
 
 
+// === Delete command tests ===
+
+// TestHandleDelete_NoArgs verifies that handleDelete with no args returns usage error.
+func TestHandleDelete_NoArgs(t *testing.T) {
+	var out bytes.Buffer
+	r := New(Pipeline{}, StatusInfo{}, WithOutput(&out))
+	err := r.handleDelete(context.Background(), nil)
+	if err == nil {
+		t.Error("handleDelete with no args should return error")
+	}
+	if err != nil && !strings.Contains(err.Error(), "usage") {
+		t.Errorf("expected usage error, got: %v", err)
+	}
+}
+
+// TestHandleDelete_NilDB verifies that handleDelete with nil DB returns error.
+func TestHandleDelete_NilDB(t *testing.T) {
+	var out bytes.Buffer
+	r := New(Pipeline{}, StatusInfo{}, WithOutput(&out))
+	err := r.handleDelete(context.Background(), []string{"myrepo"})
+	if err == nil {
+		t.Error("handleDelete with nil DB should return error")
+	}
+	if err != nil && !strings.Contains(err.Error(), "not connected") {
+		t.Errorf("expected 'not connected' error, got: %v", err)
+	}
+}
+
+// TestHandleDelete_Success verifies that handleDelete succeeds and prints confirmation.
+func TestHandleDelete_Success(t *testing.T) {
+	db := newTestREPLDB(t)
+	pipeline := Pipeline{DB: db}
+
+	var out bytes.Buffer
+	r := New(pipeline, StatusInfo{}, WithOutput(&out))
+	err := r.handleDelete(context.Background(), []string{"myrepo"})
+	if err != nil {
+		t.Fatalf("handleDelete failed: %v", err)
+	}
+	if !strings.Contains(out.String(), "deleted") {
+		t.Errorf("expected 'deleted' in output, got: %s", out.String())
+	}
+	if !strings.Contains(out.String(), "myrepo") {
+		t.Errorf("expected repo name in output, got: %s", out.String())
+	}
+}
+
+// TestRun_DeleteCommand verifies the delete command through the Run loop.
+func TestRun_DeleteCommand(t *testing.T) {
+	db := newTestREPLDB(t)
+	pipeline := Pipeline{DB: db}
+
+	in := strings.NewReader("delete myrepo\nquit\n")
+	var out bytes.Buffer
+	r := New(pipeline, StatusInfo{}, WithInput(in), WithOutput(&out))
+
+	if err := r.Run(context.Background()); err != nil {
+		t.Fatalf("Run returned error: %v", err)
+	}
+	if !strings.Contains(out.String(), "deleted") {
+		t.Errorf("expected 'deleted' in output, got: %s", out.String())
+	}
+}
+
+// TestRun_DeleteNoArgs verifies delete with no args shows error through Run.
+func TestRun_DeleteNoArgs(t *testing.T) {
+	in := strings.NewReader("delete\nquit\n")
+	var out bytes.Buffer
+	r := New(Pipeline{}, StatusInfo{}, WithInput(in), WithOutput(&out))
+
+	if err := r.Run(context.Background()); err != nil {
+		t.Fatalf("Run returned error: %v", err)
+	}
+	if !strings.Contains(out.String(), "error:") {
+		t.Errorf("expected error output for delete with no args, got: %s", out.String())
+	}
+}
+
+// TestHandleHelp_IncludesDelete verifies help output includes the delete command.
+func TestHandleHelp_IncludesDelete(t *testing.T) {
+	var out bytes.Buffer
+	r := New(Pipeline{}, StatusInfo{}, WithOutput(&out))
+	r.handleHelp()
+	if !strings.Contains(out.String(), "delete") {
+		t.Error("handleHelp output should include 'delete' command")
+	}
+}
+
 // TestRun_ListWithNilDB verifies list command through Run with nil DB.
 func TestRun_ListWithNilDB(t *testing.T) {
 	in := strings.NewReader("list\nquit\n")

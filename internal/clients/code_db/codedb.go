@@ -11,6 +11,7 @@ import (
 	"github.com/tab58/code-context/internal/clients/code_db/generated"
 	"github.com/tab58/code-context/internal/config"
 	"github.com/tab58/go-ormql/pkg/client"
+	"github.com/tab58/go-ormql/pkg/cypher"
 	"github.com/tab58/go-ormql/pkg/driver"
 	falkordbdrv "github.com/tab58/go-ormql/pkg/driver/falkordb"
 )
@@ -191,6 +192,45 @@ func (db *CodeDB) ListRepos(ctx context.Context) ([]string, error) {
 
 	sort.Strings(names)
 	return names, nil
+}
+
+// DeleteRepo removes all nodes and edges belonging to a repository from the
+// shared graph. Deletes the Repository node, plus all Folder, File, Function,
+// Class, Module, and ExternalReference nodes connected via BELONGS_TO.
+func (db *CodeDB) DeleteRepo(ctx context.Context, repoName string) error {
+	db.mu.Lock()
+	defer db.mu.Unlock()
+
+	if db.closed {
+		return errors.New("codedb: closed")
+	}
+	if repoName == "" {
+		return errors.New("codedb: repository name is required")
+	}
+
+	if err := db.initShared(ctx); err != nil {
+		return fmt.Errorf("codedb: failed to initialize shared client: %w", err)
+	}
+
+	// Delete all nodes that BELONG_TO the repository, then the repository itself.
+	// Two-step: first delete dependent nodes (with edges), then the repo node.
+	deleteDependent := cypher.Statement{
+		Query: "MATCH (r:Repository {name: $name})<-[:BELONGS_TO]-(n) DETACH DELETE n",
+		Params: map[string]any{"name": repoName},
+	}
+	if _, err := db.shared.drv.ExecuteWrite(ctx, deleteDependent); err != nil {
+		return fmt.Errorf("codedb: failed to delete dependent nodes for %q: %w", repoName, err)
+	}
+
+	deleteRepo := cypher.Statement{
+		Query:  "MATCH (r:Repository {name: $name}) DETACH DELETE r",
+		Params: map[string]any{"name": repoName},
+	}
+	if _, err := db.shared.drv.ExecuteWrite(ctx, deleteRepo); err != nil {
+		return fmt.Errorf("codedb: failed to delete repository %q: %w", repoName, err)
+	}
+
+	return nil
 }
 
 // Close shuts down the shared FalkorDB driver connection.

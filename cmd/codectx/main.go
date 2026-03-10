@@ -71,7 +71,11 @@ func main() {
 	// Create and start MCP server in goroutine
 	server := mcpserver.NewServer(db, idx, analyzer)
 	log.Printf("starting MCP server on HTTP :%s", cfg.MCPPort)
-	go server.Serve(ctx, ":"+cfg.MCPPort)
+	go func() {
+		if err := server.Serve(ctx, ":"+cfg.MCPPort); err != nil {
+			log.Printf("MCP server error: %v", err)
+		}
+	}()
 
 	// Create and run REPL on main goroutine
 	pipeline := repl.Pipeline{

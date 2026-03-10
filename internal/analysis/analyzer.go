@@ -14,23 +14,6 @@ import (
 	"github.com/tab58/go-ormql/pkg/client"
 )
 
-// mergeBatchSize is the number of items per merge mutation call.
-// Kept small because merge mutations include full source code in parameters,
-// which FalkorDB serializes into the CYPHER header. Large batches with source
-// code cause FalkorDB to OOM in memory-constrained Docker environments.
-const mergeBatchSize = 2
-
-// edgeBatchSize is the number of items per connect mutation call.
-// Even with property indexes, UNWIND + double MATCH + MERGE accumulates
-// intermediate result sets in FalkorDB. Keep batches small to avoid OOM
-// in memory-constrained Docker environments with large repositories.
-const edgeBatchSize = 5
-
-// maxSourceLen caps source code stored per symbol. The nomic-embed-text model
-// has a 2048-token context window (~8000 chars), so truncating beyond that
-// loses no embedding fidelity while drastically reducing query string size.
-const maxSourceLen = 6000
-
 // GraphQL mutations for code analysis graph writes via Client().Execute().
 const (
 	gqlMergeFunctions = `mutation($input: [FunctionMergeInput!]!) {
@@ -666,14 +649,110 @@ func (a *Analyzer) writePass2(ctx context.Context, c *client.Client, repoPath st
 	return nil
 }
 
-// gqlSetSourceBatch is a Cypher query for batched source code writes via UNWIND.
-// Uses MATCH+SET (no MERGE) so no graph scan for existence checking is needed.
-const gqlSetSourceBatch = `MATCH (n {name: item.name, path: item.path}) SET n.source = item.source`
+// ComputeComplexity computes cyclomatic complexity for all Function symbols
+// in the given files and writes values to the cyclomaticComplexity field in FalkorDB.
+// This is a post-processing step called after Analyze.
+func (a *Analyzer) ComputeComplexity(ctx context.Context, repoID string, repoPath string, files []string, opts ...AnalyzeOption) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
 
-// sourceCodeBatchSize limits source code items per UNWIND batch.
-// Source code strings can be large, so batches are kept smaller than edge batches
-// to avoid oversized Redis commands.
-const sourceCodeBatchSize = 5
+	var options analyzeOptions
+	for _, opt := range opts {
+		opt(&options)
+	}
+
+	var items []map[string]any
+
+	for _, filePath := range files {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
+
+		if isTestFile(filePath) || isGeneratedFile(filePath) {
+			continue
+		}
+
+		lang, ok := a.registry.LanguageForFile(filePath)
+		if !ok {
+			continue
+		}
+
+		ce, ok := a.registry.ComplexityExtractorForLanguage(lang.Name)
+		if !ok {
+			continue
+		}
+
+		source, err := os.ReadFile(filePath)
+		if err != nil {
+			log.Printf("complexity: failed to read %s: %v", filePath, err)
+			continue
+		}
+
+		parser := sitter.NewParser()
+		parser.SetLanguage(lang.Grammar)
+		tree, err := parser.ParseCtx(ctx, nil, source)
+		if err != nil {
+			log.Printf("complexity: failed to parse %s: %v", filePath, err)
+			continue
+		}
+
+		if options.progress != nil {
+			options.progress("complexity", filePath)
+		}
+
+		// Walk the AST to find function/method nodes and compute complexity
+		root := tree.RootNode()
+		walkForFunctions(root, source, filePath, lang.Name, ce, &items)
+	}
+
+	// Write complexity values to graph via batched Cypher
+	if a.db != nil && len(items) > 0 {
+		c, err := a.db.ForRepo(ctx, repoID)
+		if err != nil {
+			return fmt.Errorf("complexity ForRepo(%s): %w", repoID, err)
+		}
+		if err := c.ExecuteRawBatch(ctx, gqlSetComplexityBatch, items, edgeBatchSize); err != nil {
+			return fmt.Errorf("complexity batch write: %w", err)
+		}
+	}
+
+	return nil
+}
+
+// walkForFunctions recursively finds function/method AST nodes and computes
+// their cyclomatic complexity.
+func walkForFunctions(node *sitter.Node, source []byte, filePath, langName string, ce ComplexityExtractor, items *[]map[string]any) {
+	nodeType := node.Type()
+
+	isFuncNode := false
+	switch langName {
+	case "go":
+		isFuncNode = nodeType == "function_declaration" || nodeType == "method_declaration"
+	case "typescript", "tsx":
+		isFuncNode = nodeType == "function_declaration" || nodeType == "method_definition"
+	}
+
+	if isFuncNode {
+		complexity := ce.ComputeComplexity(node, source)
+		nameNode := node.ChildByFieldName("name")
+		if nameNode != nil {
+			*items = append(*items, map[string]any{
+				"name":       nameNode.Content(source),
+				"path":       filePath,
+				"complexity": complexity,
+			})
+		}
+		return // don't recurse into function bodies (nested functions are separate)
+	}
+
+	for i := 0; i < int(node.NamedChildCount()); i++ {
+		child := node.NamedChild(i)
+		if child != nil {
+			walkForFunctions(child, source, filePath, langName, ce, items)
+		}
+	}
+}
 
 // writeSourceCode sets source code on Function and Class nodes via batched UNWIND.
 // Separated from MERGE to keep merge queries small — the FalkorDB Go client
@@ -703,184 +782,4 @@ func (a *Analyzer) writeSourceCode(ctx context.Context, c *client.Client, analys
 	return c.ExecuteRawBatch(ctx, gqlSetSourceBatch, items, sourceCodeBatchSize)
 }
 
-// isTestFile returns true if the file path looks like a test file that should
-// be excluded from the code knowledge graph. Matches Go test files (*_test.go),
-// JavaScript/TypeScript test files (*.test.*, *.spec.*), and test directories.
-func isTestFile(path string) bool {
-	base := filepath.Base(path)
-	if strings.HasSuffix(base, "_test.go") {
-		return true
-	}
-	// JS/TS test patterns: foo.test.ts, foo.spec.tsx
-	ext := filepath.Ext(base)
-	nameWithoutExt := strings.TrimSuffix(base, ext)
-	if strings.HasSuffix(nameWithoutExt, ".test") || strings.HasSuffix(nameWithoutExt, ".spec") {
-		return true
-	}
-	return false
-}
-
-// isGeneratedFile returns true if the file path looks like auto-generated code
-// that should be excluded from the code knowledge graph. Generated code inflates
-// the graph with thousands of boilerplate symbols (e.g., ORM predicates, CRUD methods)
-// that don't help with code understanding.
-func isGeneratedFile(path string) bool {
-	// Check for common generated directory patterns
-	normalized := filepath.ToSlash(path)
-	for _, seg := range strings.Split(normalized, "/") {
-		if seg == "generated" || seg == "gen" {
-			return true
-		}
-	}
-	return false
-}
-
-// truncateSource returns source trimmed to maxSourceLen characters.
-// Truncation is safe because the embedding model's context window is smaller
-// than maxSourceLen, and the stored source is only used for embeddings and display.
-func truncateSource(s string) string {
-	if len(s) <= maxSourceLen {
-		return s
-	}
-	return s[:maxSourceLen]
-}
-
-// computeEndingLine returns the ending line number given a starting line and
-// line count. When lineCount is 0 or 1, endingLine equals startingLine.
-func computeEndingLine(startingLine, lineCount int) int {
-	if lineCount > 1 {
-		return startingLine + lineCount - 1
-	}
-	return startingLine
-}
-
-// buildFuncFields creates a fresh map of metadata fields for a symbol.
-// Excludes source code to keep merge queries small — source is written
-// in a separate pass via writeSourceCode after all structural merges complete.
-func buildFuncFields(sym Symbol) map[string]any {
-	fields := map[string]any{
-		"language":     sym.Language,
-		"visibility":   sym.Visibility,
-		"startingLine": sym.LineNumber,
-		"endingLine":   computeEndingLine(sym.LineNumber, sym.LineCount),
-	}
-	if sym.Signature != "" {
-		fields["signature"] = sym.Signature
-	}
-	return fields
-}
-
-// withKind returns a copy of fields with "kind" added.
-func withKind(fields map[string]any, kind string) map[string]any {
-	out := make(map[string]any, len(fields)+1)
-	for k, v := range fields {
-		out[k] = v
-	}
-	out["kind"] = kind
-	return out
-}
-
-// batchMutate executes a GraphQL mutation in batches of the given size
-// via Client().Execute(). Converts []map[string]any to []any for
-// FalkorDB driver compatibility.
-func batchMutate(ctx context.Context, c *client.Client, items []map[string]any, query string, size int) error {
-	// Convert to []any so FalkorDB's ToString can handle the slice type.
-	anyItems := make([]any, len(items))
-	for i, item := range items {
-		anyItems[i] = item
-	}
-
-	for i := 0; i < len(anyItems); i += size {
-		end := i + size
-		if end > len(anyItems) {
-			end = len(anyItems)
-		}
-		if _, err := c.Execute(ctx, query, map[string]any{"input": anyItems[i:end]}); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-// edgeSpec describes how to create edges between two node types via raw Cypher.
-// Uses individual MATCH+CREATE statements instead of UNWIND+MERGE to avoid
-// FalkorDB memory spikes from intermediate result accumulation.
-type edgeSpec struct {
-	FromLabel string            // e.g. "File"
-	FromWhere map[string]string // field name → param key, e.g. {"path": "from_path"}
-	ToLabel   string            // e.g. "Function"
-	ToWhere   map[string]string // field name → param key
-	RelType   string            // e.g. "DEFINES"
-	EdgeProps map[string]string // optional edge properties, field → param key
-}
-
-// createEdgesRaw creates edges via batched UNWIND raw Cypher for efficiency.
-// Each item is a map with "from" and "to" sub-maps containing match fields,
-// and optionally an "edge" sub-map for relationship properties.
-// Uses Client.ExecuteRawBatch to reduce FalkorDB round-trips.
-func createEdgesRaw(ctx context.Context, c *client.Client, items []map[string]any, spec edgeSpec) error {
-	if len(items) == 0 {
-		return nil
-	}
-	query := buildEdgeCypherBatch(spec)
-	if err := c.ExecuteRawBatch(ctx, query, items, edgeBatchSize); err != nil {
-		return fmt.Errorf("create edge %s: %w", spec.RelType, err)
-	}
-	return nil
-}
-
-
-// buildEdgeCypherBatch builds a Cypher query for use with ExecuteRawBatch (UNWIND).
-// Uses item.from.field and item.to.field references instead of flat $param names.
-// Example output:
-//
-//	MATCH (a:File {path: item.from.path})
-//	MATCH (b:Function {name: item.to.name, path: item.to.path})
-//	CREATE (a)-[:DEFINES]->(b)
-func buildEdgeCypherBatch(spec edgeSpec) string {
-	var sb strings.Builder
-	sb.WriteString("MATCH (a:")
-	sb.WriteString(spec.FromLabel)
-	sb.WriteString(" {")
-	writeBatchWhereProps(&sb, "from", spec.FromWhere)
-	sb.WriteString("}) MATCH (b:")
-	sb.WriteString(spec.ToLabel)
-	sb.WriteString(" {")
-	writeBatchWhereProps(&sb, "to", spec.ToWhere)
-	sb.WriteString("}) MERGE (a)-[r:")
-	sb.WriteString(spec.RelType)
-	sb.WriteString("]->(b)")
-	if len(spec.EdgeProps) > 0 {
-		sb.WriteString(" SET ")
-		first := true
-		for field := range spec.EdgeProps {
-			if !first {
-				sb.WriteString(", ")
-			}
-			sb.WriteString("r.")
-			sb.WriteString(field)
-			sb.WriteString(" = item.edge.")
-			sb.WriteString(field)
-			first = false
-		}
-	}
-	return sb.String()
-}
-
-// writeBatchWhereProps writes Cypher property match expressions for UNWIND batch queries.
-// Uses item.prefix.field syntax (e.g., "name: item.from.name, path: item.from.path").
-func writeBatchWhereProps(sb *strings.Builder, prefix string, where map[string]string) {
-	first := true
-	for field := range where {
-		if !first {
-			sb.WriteString(", ")
-		}
-		sb.WriteString(field)
-		sb.WriteString(": item.")
-		sb.WriteString(prefix)
-		sb.WriteString(".")
-		sb.WriteString(field)
-		first = false
-	}
-}
 

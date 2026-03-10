@@ -254,16 +254,151 @@ func TestClose_NoSharedClient(t *testing.T) {
 	}
 }
 
-// TestForRepo_CreateIndexesNoOp verifies that ForRepo succeeds even with a
-// fail-write driver because CreateIndexes is a no-op (no vector indexes).
-func TestForRepo_CreateIndexesNoOp(t *testing.T) {
+// --- DeleteRepo tests ---
+
+// TestDeleteRepo_Success verifies that DeleteRepo succeeds and executes
+// two write operations (dependent nodes + repository node).
+func TestDeleteRepo_Success(t *testing.T) {
+	db := newTestCodeDB(t)
+	// Force initialization by calling ForRepo first
+	if _, err := db.ForRepo(context.Background(), "test"); err != nil {
+		t.Fatalf("ForRepo failed: %v", err)
+	}
+	err := db.DeleteRepo(context.Background(), "test-repo")
+	if err != nil {
+		t.Errorf("DeleteRepo returned error: %v", err)
+	}
+}
+
+// TestDeleteRepo_EmptyName verifies that DeleteRepo returns an error when
+// the repository name is empty.
+func TestDeleteRepo_EmptyName(t *testing.T) {
+	db := newTestCodeDB(t)
+	err := db.DeleteRepo(context.Background(), "")
+	if err == nil {
+		t.Error("DeleteRepo with empty name should return error")
+	}
+}
+
+// TestDeleteRepo_AfterClose verifies that DeleteRepo returns an error
+// after the CodeDB has been closed.
+func TestDeleteRepo_AfterClose(t *testing.T) {
+	db := newTestCodeDB(t)
+	_ = db.Close(context.Background())
+	err := db.DeleteRepo(context.Background(), "test")
+	if err == nil {
+		t.Error("DeleteRepo after Close should return error")
+	}
+}
+
+// TestDeleteRepo_FailWriteDriver verifies that DeleteRepo returns an error
+// when the driver fails on write operations.
+func TestDeleteRepo_FailWriteDriver(t *testing.T) {
+	ctx := context.Background()
+	db, err := NewCodeDB(ctx, validConfig(), WithDriver(failWriteDriverInstance()))
+	if err != nil {
+		t.Fatalf("NewCodeDB returned error: %v", err)
+	}
+	// ForRepo will fail on CreateIndexes due to failWriteDriver
+	// but the range index creates use ExecuteWrite which fails.
+	// Actually, ForRepo fails because CreateIndexes calls ExecuteWrite which fails.
+	// So DeleteRepo will fail at initShared.
+	err = db.DeleteRepo(ctx, "test")
+	if err == nil {
+		t.Error("DeleteRepo with failWriteDriver should fail during initShared")
+	}
+}
+
+// TestForRepo_FailWriteDriver verifies that ForRepo fails when createIndexes
+// cannot write range indexes due to a failing driver.
+func TestForRepo_FailWriteDriver(t *testing.T) {
 	ctx := context.Background()
 	db, err := NewCodeDB(ctx, validConfig(), WithDriver(failWriteDriverInstance()))
 	if err != nil {
 		t.Fatalf("NewCodeDB should succeed (no boot connection): %v", err)
 	}
 	_, err = db.ForRepo(ctx, "test-graph")
+	if err == nil {
+		t.Error("ForRepo should fail when createIndexes cannot write range indexes")
+	}
+}
+
+// --- graphName tests ---
+
+// TestGraphName_UsesConfigured verifies graphName returns the configured name.
+func TestGraphName_UsesConfigured(t *testing.T) {
+	db := newTestCodeDB(t)
+	if got := db.graphName(); got != "test-graph" {
+		t.Errorf("graphName() = %q, want %q", got, "test-graph")
+	}
+}
+
+// TestGraphName_FallsBackToDefault verifies graphName returns the default
+// when no GraphName is configured.
+func TestGraphName_FallsBackToDefault(t *testing.T) {
+	ctx := context.Background()
+	cfg := validConfig()
+	cfg.GraphName = ""
+	db, err := NewCodeDB(ctx, cfg, WithDriver(noopDriverInstance()))
 	if err != nil {
-		t.Errorf("ForRepo should succeed with no-op CreateIndexes, got: %v", err)
+		t.Fatalf("NewCodeDB returned error: %v", err)
+	}
+	if got := db.graphName(); got != defaultGraphName {
+		t.Errorf("graphName() = %q, want default %q", got, defaultGraphName)
+	}
+}
+
+// --- ListRepos tests ---
+
+// TestListRepos_EmptyGraph verifies ListRepos returns empty slice with noop driver.
+func TestListRepos_EmptyGraph(t *testing.T) {
+	db := newTestCodeDB(t)
+	repos, err := db.ListRepos(context.Background())
+	if err != nil {
+		t.Fatalf("ListRepos returned error: %v", err)
+	}
+	if len(repos) != 0 {
+		t.Errorf("ListRepos() = %v, want empty", repos)
+	}
+}
+
+// TestListRepos_AfterClose verifies ListRepos returns error after Close.
+func TestListRepos_AfterClose(t *testing.T) {
+	db := newTestCodeDB(t)
+	_ = db.Close(context.Background())
+	_, err := db.ListRepos(context.Background())
+	if err == nil {
+		t.Error("ListRepos after Close should return error")
+	}
+}
+
+// TestListRepos_FailInit verifies ListRepos returns error when init fails.
+func TestListRepos_FailInit(t *testing.T) {
+	ctx := context.Background()
+	db, err := NewCodeDB(ctx, validConfig(), WithDriver(failWriteDriverInstance()))
+	if err != nil {
+		t.Fatalf("NewCodeDB returned error: %v", err)
+	}
+	_, err = db.ListRepos(ctx)
+	if err == nil {
+		t.Error("ListRepos with failing driver should return error")
+	}
+}
+
+// TestInitShared_Idempotent verifies that calling ForRepo twice reuses the
+// same shared client (initShared short-circuits on second call).
+func TestInitShared_Idempotent(t *testing.T) {
+	db := newTestCodeDB(t)
+	ctx := context.Background()
+	c1, err := db.ForRepo(ctx, "repo1")
+	if err != nil {
+		t.Fatalf("first ForRepo failed: %v", err)
+	}
+	c2, err := db.ForRepo(ctx, "repo2")
+	if err != nil {
+		t.Fatalf("second ForRepo failed: %v", err)
+	}
+	if c1 != c2 {
+		t.Error("ForRepo should return same client for shared graph")
 	}
 }

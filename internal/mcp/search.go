@@ -19,9 +19,9 @@ func classifyQuery(query string) strategy {
 		return strategyExact
 	}
 
-	// Rule 1: glob characters
+	// Rule 1: glob characters -> fuzzy search via Levenshtein
 	if strings.ContainsAny(q, "*?") {
-		return strategyFile
+		return strategyFuzzy
 	}
 
 	// Rule 2: path with file extension

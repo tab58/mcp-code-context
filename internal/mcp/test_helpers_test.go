@@ -7,6 +7,7 @@ import (
 
 	codedb "github.com/tab58/code-context/internal/clients/code_db"
 	"github.com/tab58/code-context/internal/config"
+	"github.com/tab58/code-context/internal/indexer"
 	"github.com/tab58/go-ormql/pkg/cypher"
 	"github.com/tab58/go-ormql/pkg/driver"
 )
@@ -120,6 +121,14 @@ func newTestServer(t *testing.T) *Server {
 	t.Helper()
 	db := newTestDB(t)
 	return &Server{db: db}
+}
+
+// newTestServerWithIndexer creates a Server backed by a noop driver with an Indexer wired up.
+func newTestServerWithIndexer(t *testing.T) *Server {
+	t.Helper()
+	db := newTestDB(t)
+	idx := indexer.NewIndexer(db)
+	return &Server{db: db, idx: idx}
 }
 
 // newTestServerWithResponses creates a Server backed by a response driver.

@@ -12,9 +12,10 @@ import (
 	"github.com/tab58/code-context/internal/analysis"
 )
 
-// Register registers the Go language extractor with the given registry.
+// Register registers the Go language extractor and complexity extractor with the given registry.
 func Register(r *analysis.Registry) {
 	r.RegisterExtractor("go", NewGoExtractor())
+	r.RegisterComplexityExtractor("go", NewGoComplexityExtractor())
 }
 
 // GoExtractor implements the Extractor interface for Go source files.

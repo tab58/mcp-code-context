@@ -100,30 +100,32 @@ func TestTraversalFile_Has4ParseFunctions(t *testing.T) {
 	}
 	src := string(data)
 
-	funcs := []string{
-		"func parseFunctionResult",
-		"func parseClassResult",
-		"func parseModuleResult",
-		"func parseFileResult",
+	// Verify parseNodeResult factory and pre-built parse function vars
+	patterns := []string{
+		"func parseNodeResult",
+		"parseFunctionResult",
+		"parseClassResult",
+		"parseModuleResult",
+		"parseFileResult",
 	}
 
-	for _, f := range funcs {
-		if !strings.Contains(src, f) {
-			t.Errorf("traversal.go should contain %q", f)
+	for _, p := range patterns {
+		if !strings.Contains(src, p) {
+			t.Errorf("traversal.go should contain %q", p)
 		}
 	}
 }
 
-// TestTraversalFile_HasToTraversalMCPResult verifies that traversal.go
-// defines the toTraversalMCPResult converter.
-// Expected result: "toTraversalMCPResult" found in source.
-func TestTraversalFile_HasToTraversalMCPResult(t *testing.T) {
-	data, err := os.ReadFile("../../internal/mcp/traversal.go")
+// TestContextTools_HasMarshalMCPResult verifies that context_tools.go
+// defines the unified marshalMCPResult converter.
+// Expected result: "marshalMCPResult" found in source.
+func TestTraversalFile_MarshalMCPResultUnified(t *testing.T) {
+	data, err := os.ReadFile("../../internal/mcp/context_tools.go")
 	if err != nil {
-		t.Fatalf("failed to read traversal.go: %v", err)
+		t.Fatalf("failed to read context_tools.go: %v", err)
 	}
-	if !strings.Contains(string(data), "func toTraversalMCPResult") {
-		t.Error("traversal.go should contain toTraversalMCPResult function")
+	if !strings.Contains(string(data), "func marshalMCPResult") {
+		t.Error("context_tools.go should contain marshalMCPResult function")
 	}
 }
 
@@ -161,7 +163,7 @@ func TestTypesFile_HasMaxTraversalDepth(t *testing.T) {
 // TestServerFile_Has8Tools verifies that server.go registers 8 tools
 // (3 search + 5 traversal) via AddTool calls.
 // Expected result: 8 AddTool calls in server.go.
-func TestServerFile_Has8Tools(t *testing.T) {
+func TestServerFile_Has12Tools(t *testing.T) {
 	data, err := os.ReadFile("../../internal/mcp/server.go")
 	if err != nil {
 		t.Fatalf("failed to read server.go: %v", err)
@@ -169,8 +171,8 @@ func TestServerFile_Has8Tools(t *testing.T) {
 	src := string(data)
 
 	count := strings.Count(src, "mcpServer.AddTool(")
-	if count != 8 {
-		t.Errorf("server.go should have 8 AddTool calls, got %d", count)
+	if count != 19 {
+		t.Errorf("server.go should have 19 AddTool calls, got %d", count)
 	}
 }
 
@@ -199,16 +201,16 @@ func TestServerFile_HasTraversalToolNames(t *testing.T) {
 	}
 }
 
-// TestServerFile_DocComment8Tools verifies that NewServer doc comment
-// mentions "8 tool handlers".
-// Expected result: "8 tool" found in server.go.
-func TestServerFile_DocComment8Tools(t *testing.T) {
+// TestServerFile_DocComment12Tools verifies that NewServer doc comment
+// mentions "12 tool handlers".
+// Expected result: "12 tool" found in server.go.
+func TestServerFile_DocComment12Tools(t *testing.T) {
 	data, err := os.ReadFile("../../internal/mcp/server.go")
 	if err != nil {
 		t.Fatalf("failed to read server.go: %v", err)
 	}
-	if !strings.Contains(string(data), "8 tool") {
-		t.Error("server.go NewServer doc comment should mention '8 tool handlers'")
+	if !strings.Contains(string(data), "19 tool") {
+		t.Error("server.go NewServer doc comment should mention '19 tool handlers'")
 	}
 }
 
