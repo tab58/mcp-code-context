@@ -180,6 +180,15 @@ type ComplexityResponse struct {
 	Total      int                `json:"total"`
 }
 
+// CallChainResponse is the response envelope for find_call_chain.
+type CallChainResponse struct {
+	Source string            `json:"source"`
+	Target string            `json:"target"`
+	Path   []TraversalResult `json:"path"`
+	Depth  int               `json:"depth"`
+	Found  bool              `json:"found"`
+}
+
 // strategy represents a search dispatch strategy.
 type strategy int
 

@@ -505,18 +505,13 @@ func hasThisRoot(node *sitter.Node, source []byte) bool {
 }
 
 func findChildByType(node *sitter.Node, typeName string) *sitter.Node {
-	for i := 0; i < int(node.ChildCount()); i++ {
-		if node.Child(i).Type() == typeName {
-			return node.Child(i)
-		}
-	}
-	return nil
+	return analysis.FindChildByType(node, typeName)
 }
 
 func nodeText(node *sitter.Node, source []byte) string {
-	return string(source[node.StartByte():node.EndByte()])
+	return analysis.NodeText(node, source)
 }
 
 func lineCount(node *sitter.Node) int {
-	return int(node.EndPoint().Row-node.StartPoint().Row) + 1
+	return analysis.LineCount(node)
 }

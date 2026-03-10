@@ -22,7 +22,7 @@ type Server struct {
 	http     *server.StreamableHTTPServer
 }
 
-// NewServer creates an MCP server with all 19 tool handlers (4 search + 5 traversal + 4 context + 3 management + 3 analysis) registered.
+// NewServer creates an MCP server with all 20 tool handlers (4 search + 5 traversal + 1 call chain + 4 context + 3 management + 3 analysis) registered.
 func NewServer(db *codedb.CodeDB, idx *indexer.Indexer, analyzer *analysis.Analyzer) *Server {
 	s := &Server{
 		db:       db,
@@ -192,6 +192,16 @@ func NewServer(db *codedb.CodeDB, idx *indexer.Indexer, analyzer *analysis.Analy
 		mcp.WithNumber("limit", mcp.Description("Maximum number of results (default 10)")),
 	)
 	mcpServer.AddTool(findMostComplexTool, s.mcpHandleFindMostComplexFunctions)
+
+	// Register find_call_chain tool
+	findCallChainTool := mcp.NewTool("find_call_chain",
+		mcp.WithDescription("Find the call path between two functions using bidirectional BFS"),
+		mcp.WithString("repository", mcp.Required(), mcp.Description("Repository name")),
+		mcp.WithString("source_function", mcp.Required(), mcp.Description("Source function name")),
+		mcp.WithString("target_function", mcp.Required(), mcp.Description("Target function name")),
+		mcp.WithNumber("max_depth", mcp.Description("Maximum traversal depth 1-5 (default 5)")),
+	)
+	mcpServer.AddTool(findCallChainTool, s.mcpHandleFindCallChain)
 
 	s.mcp = mcpServer
 	s.http = server.NewStreamableHTTPServer(mcpServer)
@@ -453,6 +463,20 @@ func (s *Server) mcpHandleFindMostComplexFunctions(ctx context.Context, request 
 	limit := int(request.GetFloat("limit", float64(defaultLimit)))
 
 	resp, err := s.handleFindMostComplexFunctions(ctx, repo, minComplexity, limit)
+	if err != nil {
+		return mcp.NewToolResultError(err.Error()), nil
+	}
+	return marshalMCPResult(resp)
+}
+
+// mcpHandleFindCallChain is the MCP tool handler for find_call_chain.
+func (s *Server) mcpHandleFindCallChain(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	repo := request.GetString("repository", "")
+	source := request.GetString("source_function", "")
+	target := request.GetString("target_function", "")
+	maxDepth := int(request.GetFloat("max_depth", float64(maxCallChainDepth)))
+
+	resp, err := s.handleFindCallChain(ctx, repo, source, target, maxDepth)
 	if err != nil {
 		return mcp.NewToolResultError(err.Error()), nil
 	}

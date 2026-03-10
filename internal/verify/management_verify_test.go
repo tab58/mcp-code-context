@@ -341,13 +341,13 @@ func TestManagement_StatsCountsAll5NodeTypes(t *testing.T) {
 // ============================================================================
 
 // TestServer_Registers15Tools verifies that server.go registers the expected
-// number of tools in NewServer: 4 search + 5 traversal + 4 context + 3 management + 3 analysis = 19.
-// Expected result: server.go calls mcpServer.AddTool 19 times.
+// number of tools in NewServer: 4 search + 5 traversal + 1 call chain + 4 context + 3 management + 3 analysis = 20.
+// Expected result: server.go calls mcpServer.AddTool 20 times.
 func TestServer_Registers15Tools(t *testing.T) {
 	src := readProjectFile(t, "internal/mcp/server.go")
 	count := strings.Count(src, "mcpServer.AddTool(")
-	if count != 19 {
-		t.Errorf("NewServer should register 19 tools, found %d AddTool calls", count)
+	if count != 20 {
+		t.Errorf("NewServer should register 20 tools, found %d AddTool calls", count)
 	}
 }
 
@@ -442,12 +442,12 @@ func TestServer_ServerStructHasAnalyzerField(t *testing.T) {
 }
 
 // TestServer_DocComment15Tools verifies that NewServer doc comment
-// mentions "19 tool handlers".
-// Expected result: server.go doc comment says "19".
+// mentions "20 tool handlers".
+// Expected result: server.go doc comment says "20".
 func TestServer_DocComment15Tools(t *testing.T) {
 	src := readProjectFile(t, "internal/mcp/server.go")
-	if !strings.Contains(src, "19 tool") {
-		t.Error("NewServer doc comment should mention '19 tool handlers'")
+	if !strings.Contains(src, "20 tool") {
+		t.Error("NewServer doc comment should mention '20 tool handlers'")
 	}
 }
 

@@ -153,8 +153,8 @@ func TestServerRegistration_12Tools(t *testing.T) {
 		t.Fatalf("failed to read server.go: %v", err)
 	}
 	src := string(data)
-	if !strings.Contains(src, "19 tool") {
-		t.Error("server.go should mention '19 tool' in doc comment")
+	if !strings.Contains(src, "20 tool") {
+		t.Error("server.go should mention '20 tool' in doc comment")
 	}
 }
 

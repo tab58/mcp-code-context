@@ -6,6 +6,9 @@ import (
 
 	sitter "github.com/smacker/go-tree-sitter"
 	"github.com/smacker/go-tree-sitter/golang"
+	"github.com/smacker/go-tree-sitter/javascript"
+	"github.com/smacker/go-tree-sitter/python"
+	"github.com/smacker/go-tree-sitter/ruby"
 	"github.com/smacker/go-tree-sitter/typescript/tsx"
 	"github.com/smacker/go-tree-sitter/typescript/typescript"
 )
@@ -38,6 +41,9 @@ func NewRegistry() *Registry {
 	r.registerLanguage(Language{Name: "go", Extensions: []string{".go"}, Grammar: golang.GetLanguage()})
 	r.registerLanguage(Language{Name: "typescript", Extensions: []string{".ts"}, Grammar: typescript.GetLanguage()})
 	r.registerLanguage(Language{Name: "tsx", Extensions: []string{".tsx"}, Grammar: tsx.GetLanguage()})
+	r.registerLanguage(Language{Name: "javascript", Extensions: []string{".js", ".jsx"}, Grammar: javascript.GetLanguage()})
+	r.registerLanguage(Language{Name: "python", Extensions: []string{".py"}, Grammar: python.GetLanguage()})
+	r.registerLanguage(Language{Name: "ruby", Extensions: []string{".rb"}, Grammar: ruby.GetLanguage()})
 
 	return r
 }

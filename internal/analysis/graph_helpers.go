@@ -171,7 +171,9 @@ func withKind(fields map[string]any, kind string) map[string]any {
 
 // isTestFile returns true if the file path looks like a test file that should
 // be excluded from the code knowledge graph. Matches Go test files (*_test.go),
-// JavaScript/TypeScript test files (*.test.*, *.spec.*), and test directories.
+// JavaScript/TypeScript test files (*.test.*, *.spec.*), Python test files
+// (test_*.py, *_test.py), Ruby test/spec files (*_test.rb, *_spec.rb),
+// and files in test/tests/spec directories.
 func isTestFile(path string) bool {
 	base := filepath.Base(path)
 	if strings.HasSuffix(base, "_test.go") {
@@ -182,6 +184,21 @@ func isTestFile(path string) bool {
 	nameWithoutExt := strings.TrimSuffix(base, ext)
 	if strings.HasSuffix(nameWithoutExt, ".test") || strings.HasSuffix(nameWithoutExt, ".spec") {
 		return true
+	}
+	// Python test patterns: test_models.py, models_test.py
+	if ext == ".py" && (strings.HasPrefix(base, "test_") || strings.HasSuffix(nameWithoutExt, "_test")) {
+		return true
+	}
+	// Ruby test/spec patterns: user_test.rb, user_spec.rb
+	if ext == ".rb" && (strings.HasSuffix(nameWithoutExt, "_test") || strings.HasSuffix(nameWithoutExt, "_spec")) {
+		return true
+	}
+	// Test directory patterns: test/, tests/, spec/
+	normalized := filepath.ToSlash(path)
+	for _, seg := range strings.Split(normalized, "/") {
+		if seg == "test" || seg == "tests" || seg == "spec" {
+			return true
+		}
 	}
 	return false
 }

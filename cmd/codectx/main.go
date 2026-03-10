@@ -11,6 +11,9 @@ import (
 	appconf "github.com/tab58/code-context/cmd/codectx/config"
 	"github.com/tab58/code-context/internal/analysis"
 	goextractor "github.com/tab58/code-context/internal/analysis/golang"
+	jsextractor "github.com/tab58/code-context/internal/analysis/javascript"
+	pyextractor "github.com/tab58/code-context/internal/analysis/python"
+	rbextractor "github.com/tab58/code-context/internal/analysis/ruby"
 	tsextractor "github.com/tab58/code-context/internal/analysis/typescript"
 	codedb "github.com/tab58/code-context/internal/clients/code_db"
 	"github.com/tab58/code-context/internal/config"
@@ -66,6 +69,9 @@ func main() {
 	registry := analysis.NewRegistry()
 	goextractor.Register(registry)
 	tsextractor.Register(registry)
+	jsextractor.Register(registry)
+	pyextractor.Register(registry)
+	rbextractor.Register(registry)
 	analyzer := analysis.NewAnalyzer(registry, db)
 
 	// Create and start MCP server in goroutine

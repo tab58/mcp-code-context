@@ -55,16 +55,16 @@ func TestMCP_IngestRepositoryCallsComputeComplexity(t *testing.T) {
 // --- Task 11: server.go 19-tool registration ---
 
 // TestServer_Registers19Tools verifies that server.go doc comment
-// reflects 19 total registered tools.
-// Expected result: Doc comment mentions "19".
+// reflects 20 total registered tools.
+// Expected result: Doc comment mentions "20".
 func TestServer_Registers19Tools(t *testing.T) {
 	data, err := os.ReadFile("../mcp/server.go")
 	if err != nil {
 		t.Fatalf("cannot read server.go: %v", err)
 	}
 	src := string(data)
-	if !strings.Contains(src, "19") {
-		t.Error("server.go doc comment should mention 19 total tools")
+	if !strings.Contains(src, "20") {
+		t.Error("server.go doc comment should mention 20 total tools")
 	}
 }
 

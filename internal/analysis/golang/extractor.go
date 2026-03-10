@@ -492,9 +492,9 @@ func goVisibility(name string) string {
 }
 
 func nodeText(node *sitter.Node, source []byte) string {
-	return string(source[node.StartByte():node.EndByte()])
+	return analysis.NodeText(node, source)
 }
 
 func lineCount(node *sitter.Node) int {
-	return int(node.EndPoint().Row-node.StartPoint().Row) + 1
+	return analysis.LineCount(node)
 }

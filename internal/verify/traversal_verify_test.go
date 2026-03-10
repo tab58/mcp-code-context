@@ -171,8 +171,8 @@ func TestServerFile_Has12Tools(t *testing.T) {
 	src := string(data)
 
 	count := strings.Count(src, "mcpServer.AddTool(")
-	if count != 19 {
-		t.Errorf("server.go should have 19 AddTool calls, got %d", count)
+	if count != 20 {
+		t.Errorf("server.go should have 20 AddTool calls, got %d", count)
 	}
 }
 
@@ -209,8 +209,8 @@ func TestServerFile_DocComment12Tools(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to read server.go: %v", err)
 	}
-	if !strings.Contains(string(data), "19 tool") {
-		t.Error("server.go NewServer doc comment should mention '19 tool handlers'")
+	if !strings.Contains(string(data), "20 tool") {
+		t.Error("server.go NewServer doc comment should mention '20 tool handlers'")
 	}
 }
 
