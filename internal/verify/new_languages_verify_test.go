@@ -152,62 +152,64 @@ func TestVerify_IsTestFile_RubyTestSuffix(t *testing.T) {
 	}
 }
 
-// --- Task 6: main.go registration ---
+// --- Task 6: app.go registration ---
+//
+// After refactoring, extractor registration moved from main.go to internal/app/app.go.
 
-// TestVerify_MainImportsJSExtractor verifies that main.go imports the
+// TestVerify_MainImportsJSExtractor verifies that internal/app/app.go imports the
 // JavaScript extractor sub-package.
-// Expected result: main.go contains "analysis/javascript" import.
+// Expected result: app.go contains "analysis/javascript" import.
 func TestVerify_MainImportsJSExtractor(t *testing.T) {
-	content, err := os.ReadFile("../../cmd/codectx/main.go")
+	content, err := os.ReadFile("../../internal/app/app.go")
 	if err != nil {
-		t.Fatalf("failed to read main.go: %v", err)
+		t.Fatalf("failed to read app.go: %v", err)
 	}
 	s := string(content)
 	if !strings.Contains(s, `analysis/javascript`) {
-		t.Error("main.go does not import analysis/javascript sub-package")
+		t.Error("internal/app/app.go does not import analysis/javascript sub-package")
 	}
 }
 
-// TestVerify_MainImportsPyExtractor verifies that main.go imports the
+// TestVerify_MainImportsPyExtractor verifies that internal/app/app.go imports the
 // Python extractor sub-package.
-// Expected result: main.go contains "analysis/python" import.
+// Expected result: app.go contains "analysis/python" import.
 func TestVerify_MainImportsPyExtractor(t *testing.T) {
-	content, err := os.ReadFile("../../cmd/codectx/main.go")
+	content, err := os.ReadFile("../../internal/app/app.go")
 	if err != nil {
-		t.Fatalf("failed to read main.go: %v", err)
+		t.Fatalf("failed to read app.go: %v", err)
 	}
 	s := string(content)
 	if !strings.Contains(s, `analysis/python`) {
-		t.Error("main.go does not import analysis/python sub-package")
+		t.Error("internal/app/app.go does not import analysis/python sub-package")
 	}
 }
 
-// TestVerify_MainImportsRbExtractor verifies that main.go imports the
+// TestVerify_MainImportsRbExtractor verifies that internal/app/app.go imports the
 // Ruby extractor sub-package.
-// Expected result: main.go contains "analysis/ruby" import.
+// Expected result: app.go contains "analysis/ruby" import.
 func TestVerify_MainImportsRbExtractor(t *testing.T) {
-	content, err := os.ReadFile("../../cmd/codectx/main.go")
+	content, err := os.ReadFile("../../internal/app/app.go")
 	if err != nil {
-		t.Fatalf("failed to read main.go: %v", err)
+		t.Fatalf("failed to read app.go: %v", err)
 	}
 	s := string(content)
 	if !strings.Contains(s, `analysis/ruby`) {
-		t.Error("main.go does not import analysis/ruby sub-package")
+		t.Error("internal/app/app.go does not import analysis/ruby sub-package")
 	}
 }
 
-// TestVerify_MainRegistersJSExtractor verifies that main.go calls
+// TestVerify_MainRegistersJSExtractor verifies that internal/app/app.go calls
 // jsextractor.Register(registry) or equivalent.
-// Expected result: main.go contains JavaScript Register call.
+// Expected result: app.go contains JavaScript Register call.
 func TestVerify_MainRegistersJSExtractor(t *testing.T) {
-	content, err := os.ReadFile("../../cmd/codectx/main.go")
+	content, err := os.ReadFile("../../internal/app/app.go")
 	if err != nil {
-		t.Fatalf("failed to read main.go: %v", err)
+		t.Fatalf("failed to read app.go: %v", err)
 	}
 	s := string(content)
 	// Look for any Register call for JS extractor (alias may vary)
 	if !strings.Contains(s, "Register(registry)") || !strings.Contains(s, "javascript") {
-		t.Error("main.go does not register JavaScript extractor with registry")
+		t.Error("internal/app/app.go does not register JavaScript extractor with registry")
 	}
 }
 
@@ -226,16 +228,16 @@ func TestVerify_CallChainFileExists(t *testing.T) {
 }
 
 // TestVerify_CallChainHasHandleFunction verifies that call_chain.go contains
-// the handleFindCallChain method.
-// Expected result: call_chain.go contains "handleFindCallChain".
+// the HandleFindCallChain method (exported on *Service receiver).
+// Expected result: call_chain.go contains "HandleFindCallChain".
 func TestVerify_CallChainHasHandleFunction(t *testing.T) {
 	content, err := os.ReadFile("../../internal/mcp/call_chain.go")
 	if err != nil {
 		t.Fatalf("failed to read call_chain.go: %v", err)
 	}
 	s := string(content)
-	if !strings.Contains(s, "handleFindCallChain") {
-		t.Error("call_chain.go does not contain handleFindCallChain method")
+	if !strings.Contains(s, "HandleFindCallChain") {
+		t.Error("call_chain.go does not contain HandleFindCallChain method")
 	}
 }
 
@@ -258,7 +260,7 @@ func TestVerify_CallChainHasMaxDepthConstant(t *testing.T) {
 // TestVerify_ServerRegisters20Tools verifies that server.go registers 20 tools.
 // Expected result: server.go contains "20 tool handlers" in doc comment.
 func TestVerify_ServerRegisters20Tools(t *testing.T) {
-	content, err := os.ReadFile("../../internal/mcp/server.go")
+	content, err := os.ReadFile("../../internal/api/mcp/server.go")
 	if err != nil {
 		t.Fatalf("failed to read server.go: %v", err)
 	}
@@ -272,7 +274,7 @@ func TestVerify_ServerRegisters20Tools(t *testing.T) {
 // the find_call_chain tool.
 // Expected result: server.go contains 'find_call_chain' tool registration.
 func TestVerify_ServerHasFindCallChainTool(t *testing.T) {
-	content, err := os.ReadFile("../../internal/mcp/server.go")
+	content, err := os.ReadFile("../../internal/api/mcp/server.go")
 	if err != nil {
 		t.Fatalf("failed to read server.go: %v", err)
 	}
@@ -286,7 +288,7 @@ func TestVerify_ServerHasFindCallChainTool(t *testing.T) {
 // the mcpHandleFindCallChain adapter method.
 // Expected result: server.go contains "mcpHandleFindCallChain".
 func TestVerify_ServerHasMCPHandleFindCallChain(t *testing.T) {
-	content, err := os.ReadFile("../../internal/mcp/server.go")
+	content, err := os.ReadFile("../../internal/api/mcp/server.go")
 	if err != nil {
 		t.Fatalf("failed to read server.go: %v", err)
 	}

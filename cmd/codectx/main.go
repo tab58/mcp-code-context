@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"syscall"
 
+	mcpserver "github.com/tab58/code-context/api/mcp"
+	"github.com/tab58/code-context/api/repl"
 	appconf "github.com/tab58/code-context/cmd/codectx/config"
 	"github.com/tab58/code-context/internal/analysis"
 	goextractor "github.com/tab58/code-context/internal/analysis/golang"
@@ -15,12 +17,13 @@ import (
 	pyextractor "github.com/tab58/code-context/internal/analysis/python"
 	rbextractor "github.com/tab58/code-context/internal/analysis/ruby"
 	tsextractor "github.com/tab58/code-context/internal/analysis/typescript"
+	"github.com/tab58/code-context/internal/app"
 	codedb "github.com/tab58/code-context/internal/clients/code_db"
 	"github.com/tab58/code-context/internal/config"
 	"github.com/tab58/code-context/internal/indexer"
-	mcpserver "github.com/tab58/code-context/internal/mcp"
-	"github.com/tab58/code-context/internal/repl"
 )
+
+var Version string
 
 var cfg *appconf.Config
 
@@ -62,9 +65,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to connect to FalkorDB: %v", err)
 	}
-	defer db.Close(ctx)
 
-	// Create pipeline components
+	// create application dependencies
 	idx := indexer.NewIndexer(db)
 	registry := analysis.NewRegistry()
 	goextractor.Register(registry)
@@ -73,9 +75,15 @@ func main() {
 	pyextractor.Register(registry)
 	rbextractor.Register(registry)
 	analyzer := analysis.NewAnalyzer(registry, db)
+	// Create application
+	application := app.NewApplication(&app.ApplicationConfig{
+		DB:       db,
+		Indexer:  idx,
+		Analyzer: analyzer,
+	})
 
 	// Create and start MCP server in goroutine
-	server := mcpserver.NewServer(db, idx, analyzer)
+	server := mcpserver.NewServer(application)
 	log.Printf("starting MCP server on HTTP :%s", cfg.MCPPort)
 	go func() {
 		if err := server.Serve(ctx, ":"+cfg.MCPPort); err != nil {

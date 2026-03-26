@@ -33,11 +33,11 @@ func TestMcpTypesFileExists(t *testing.T) {
 
 // === Task 3: internal/mcp/server.go exists ===
 
-// TestMcpServerFileExists verifies that internal/mcp/server.go has been created.
+// TestMcpServerFileExists verifies that internal/api/mcp/server.go has been created.
 // Expected result: file exists.
 func TestMcpServerFileExists(t *testing.T) {
-	if !projectFileExists(t, "internal/mcp/server.go") {
-		t.Error("internal/mcp/server.go does not exist")
+	if !projectFileExists(t, "internal/api/mcp/server.go") {
+		t.Error("internal/api/mcp/server.go does not exist")
 	}
 }
 
@@ -63,24 +63,24 @@ func TestMcpToolsFileExists(t *testing.T) {
 // components, and call Serve() instead of the placeholder println.
 
 // TestMainGoImportsMcpPackage verifies that cmd/codectx/main.go imports
-// the internal/mcp package for MCP server creation.
-// Expected result: main.go contains "internal/mcp" import.
+// the internal/api/mcp package for MCP server creation.
+// Expected result: main.go contains "internal/api/mcp" import.
 func TestMainGoImportsMcpPackage(t *testing.T) {
 	content := readProjectFile(t, "cmd/codectx/main.go")
 
-	if !strings.Contains(content, "internal/mcp") {
-		t.Error("cmd/codectx/main.go does not import internal/mcp — MCP server not wired")
+	if !strings.Contains(content, "internal/api/mcp") {
+		t.Error("cmd/codectx/main.go does not import internal/api/mcp — MCP server not wired")
 	}
 }
 
 // TestMainGoCreatesMcpServer verifies that main.go calls mcp.NewServer()
 // with the pipeline components.
-// Expected result: main.go contains mcp.NewServer or equivalent.
+// Expected result: main.go contains NewServer call.
 func TestMainGoCreatesMcpServer(t *testing.T) {
 	content := readProjectFile(t, "cmd/codectx/main.go")
 
-	// Check for mcp.NewServer or mcpserver.NewServer (either import alias)
-	if !strings.Contains(content, "NewServer") || !strings.Contains(content, "internal/mcp") {
+	// Check for mcpserver.NewServer (aliased import)
+	if !strings.Contains(content, "NewServer") || !strings.Contains(content, "internal/api/mcp") {
 		t.Error("cmd/codectx/main.go does not create MCP server via NewServer()")
 	}
 }
@@ -126,15 +126,15 @@ func TestMainGoNoWaitForShutdown(t *testing.T) {
 
 // TestMcpPackageHasAllHandlers verifies that the internal/mcp package
 // contains handler implementations for all 3 tools.
-// Expected result: tools.go contains handleFindFunction, handleFindFile,
-// handleSearchCode.
+// Expected result: tools.go contains HandleFindFunction, HandleFindFile,
+// HandleSearchCode (exported methods on *Service).
 func TestMcpPackageHasAllHandlers(t *testing.T) {
 	content := readProjectFile(t, "internal/mcp/tools.go")
 
 	handlers := []string{
-		"handleFindFunction",
-		"handleFindFile",
-		"handleSearchCode",
+		"HandleFindFunction",
+		"HandleFindFile",
+		"HandleSearchCode",
 	}
 
 	for _, h := range handlers {
@@ -146,11 +146,11 @@ func TestMcpPackageHasAllHandlers(t *testing.T) {
 	}
 }
 
-// TestMcpServerRegistersTools verifies that server.go registers all 3 tools
-// with mcp-go tool definitions.
+// TestMcpServerRegistersTools verifies that internal/api/mcp/server.go registers
+// all 3 tools with mcp-go tool definitions.
 // Expected result: server.go contains tool name strings for all 3 tools.
 func TestMcpServerRegistersTools(t *testing.T) {
-	content := readProjectFile(t, "internal/mcp/server.go")
+	content := readProjectFile(t, "internal/api/mcp/server.go")
 
 	tools := []string{
 		"find_function",
@@ -161,20 +161,20 @@ func TestMcpServerRegistersTools(t *testing.T) {
 	for _, tool := range tools {
 		t.Run(tool, func(t *testing.T) {
 			if !strings.Contains(content, tool) {
-				t.Errorf("internal/mcp/server.go does not register %q tool", tool)
+				t.Errorf("internal/api/mcp/server.go does not register %q tool", tool)
 			}
 		})
 	}
 }
 
-// TestMcpServerUsesStdioTransport verifies that server.go imports the mcp-go
-// library (not just mentions it in comments) and uses stdio transport.
+// TestMcpServerUsesMcpGoLibrary verifies that server.go imports the mcp-go
+// library (not just mentions it in comments).
 // Expected result: server.go has a Go import line for mark3labs/mcp-go.
-func TestMcpServerUsesStdioTransport(t *testing.T) {
-	content := readProjectFile(t, "internal/mcp/server.go")
+func TestMcpServerUsesMcpGoLibrary(t *testing.T) {
+	content := readProjectFile(t, "internal/api/mcp/server.go")
 
 	// Check for actual Go import of mcp-go (inside import block, with quotes)
 	if !strings.Contains(content, `"github.com/mark3labs/mcp-go`) {
-		t.Error("internal/mcp/server.go does not import mcp-go — stdio transport requires mcp-go library import")
+		t.Error("internal/api/mcp/server.go does not import mcp-go — server requires mcp-go library import")
 	}
 }

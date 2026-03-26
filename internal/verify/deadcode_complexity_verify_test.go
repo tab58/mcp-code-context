@@ -58,7 +58,7 @@ func TestMCP_IngestRepositoryCallsComputeComplexity(t *testing.T) {
 // reflects 20 total registered tools.
 // Expected result: Doc comment mentions "20".
 func TestServer_Registers19Tools(t *testing.T) {
-	data, err := os.ReadFile("../mcp/server.go")
+	data, err := os.ReadFile("../api/mcp/server.go")
 	if err != nil {
 		t.Fatalf("cannot read server.go: %v", err)
 	}
@@ -72,7 +72,7 @@ func TestServer_Registers19Tools(t *testing.T) {
 // search_code_names tool is registered in server.go.
 // Expected result: Source contains "search_code_names".
 func TestServer_RegistersSearchCodeNames(t *testing.T) {
-	data, err := os.ReadFile("../mcp/server.go")
+	data, err := os.ReadFile("../api/mcp/server.go")
 	if err != nil {
 		t.Fatalf("cannot read server.go: %v", err)
 	}
@@ -86,7 +86,7 @@ func TestServer_RegistersSearchCodeNames(t *testing.T) {
 // content-based search_code tool is registered in server.go.
 // Expected result: Source contains mcpHandleSearchCodeContent or similar adapter.
 func TestServer_RegistersContentSearchCode(t *testing.T) {
-	data, err := os.ReadFile("../mcp/server.go")
+	data, err := os.ReadFile("../api/mcp/server.go")
 	if err != nil {
 		t.Fatalf("cannot read server.go: %v", err)
 	}
@@ -101,7 +101,7 @@ func TestServer_RegistersContentSearchCode(t *testing.T) {
 // tool is registered in server.go.
 // Expected result: Source contains "find_dead_code".
 func TestServer_RegistersFindDeadCode(t *testing.T) {
-	data, err := os.ReadFile("../mcp/server.go")
+	data, err := os.ReadFile("../api/mcp/server.go")
 	if err != nil {
 		t.Fatalf("cannot read server.go: %v", err)
 	}
@@ -115,7 +115,7 @@ func TestServer_RegistersFindDeadCode(t *testing.T) {
 // calculate_cyclomatic_complexity tool is registered in server.go.
 // Expected result: Source contains "calculate_cyclomatic_complexity".
 func TestServer_RegistersCalculateCyclomaticComplexity(t *testing.T) {
-	data, err := os.ReadFile("../mcp/server.go")
+	data, err := os.ReadFile("../api/mcp/server.go")
 	if err != nil {
 		t.Fatalf("cannot read server.go: %v", err)
 	}
@@ -129,7 +129,7 @@ func TestServer_RegistersCalculateCyclomaticComplexity(t *testing.T) {
 // find_most_complex_functions tool is registered in server.go.
 // Expected result: Source contains "find_most_complex_functions".
 func TestServer_RegistersFindMostComplexFunctions(t *testing.T) {
-	data, err := os.ReadFile("../mcp/server.go")
+	data, err := os.ReadFile("../api/mcp/server.go")
 	if err != nil {
 		t.Fatalf("cannot read server.go: %v", err)
 	}
@@ -182,7 +182,7 @@ func TestContentSearchFile_Exists(t *testing.T) {
 	}{
 		{"gqlFunctionsWithSource", "gqlFunctionsWithSource"},
 		{"gqlClassesWithSource", "gqlClassesWithSource"},
-		{"handleSearchCodeContent", "handleSearchCodeContent"},
+		{"HandleSearchCodeContent", "HandleSearchCodeContent"},
 	}
 	for _, c := range checks {
 		if !strings.Contains(src, c.pattern) {

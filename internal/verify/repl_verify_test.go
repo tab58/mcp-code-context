@@ -48,7 +48,7 @@ func TestConfigMCPPortDefault(t *testing.T) {
 // the streamable HTTP transport from mcp-go.
 // Expected result: server.go references StreamableHTTP or streamable_http.
 func TestMcpServerImportsStreamableHTTP(t *testing.T) {
-	content := readProjectFile(t, "internal/mcp/server.go")
+	content := readProjectFile(t, "internal/api/mcp/server.go")
 
 	if !strings.Contains(content, "StreamableHTTP") {
 		t.Error("server.go does not reference StreamableHTTPServer — transport not switched to HTTP")
@@ -58,7 +58,7 @@ func TestMcpServerImportsStreamableHTTP(t *testing.T) {
 // TestMcpServerServeAcceptsAddr verifies that Serve method accepts an addr parameter.
 // Expected result: server.go contains "Serve(ctx context.Context, addr string)".
 func TestMcpServerServeAcceptsAddr(t *testing.T) {
-	content := readProjectFile(t, "internal/mcp/server.go")
+	content := readProjectFile(t, "internal/api/mcp/server.go")
 
 	if !strings.Contains(content, "addr string") {
 		t.Error("server.go Serve method does not accept addr parameter — transport not switched to HTTP")
@@ -68,7 +68,7 @@ func TestMcpServerServeAcceptsAddr(t *testing.T) {
 // TestMcpServerNoStdioTransport verifies that server.go no longer uses stdio transport.
 // Expected result: server.go does NOT contain ServeStdio.
 func TestMcpServerNoStdioTransport(t *testing.T) {
-	content := readProjectFile(t, "internal/mcp/server.go")
+	content := readProjectFile(t, "internal/api/mcp/server.go")
 
 	if strings.Contains(content, "ServeStdio") {
 		t.Error("server.go still uses ServeStdio — should be switched to streamable HTTP")

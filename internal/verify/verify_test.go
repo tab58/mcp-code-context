@@ -227,29 +227,31 @@ func TestCmdMainGoHasSignalHandling(t *testing.T) {
 
 // --- Task 17: Pipeline wiring ---
 
-// TestCmdMainGoImportsIndexer verifies that cmd/main.go imports the indexer package.
-// Expected result: cmd/main.go contains indexer import.
+// TestCmdMainGoImportsApp verifies that cmd/main.go imports the internal/app package.
+// After refactoring, pipeline wiring (indexer, analysis, extractors) moved to internal/app.
+// Expected result: cmd/main.go contains internal/app import.
 func TestCmdMainGoImportsIndexer(t *testing.T) {
 	if !projectFileExists(t, "cmd/codectx/main.go") {
 		t.Fatal("cmd/main.go does not exist (required for pipeline wiring)")
 	}
 	content := readProjectFile(t, "cmd/codectx/main.go")
 
-	if !strings.Contains(content, "internal/indexer") {
-		t.Error("cmd/main.go should import internal/indexer for pipeline wiring")
+	if !strings.Contains(content, "internal/app") {
+		t.Error("cmd/main.go should import internal/app for pipeline wiring (composition root)")
 	}
 }
 
-// TestCmdMainGoImportsAnalysis verifies that cmd/main.go imports the analysis package.
-// Expected result: cmd/main.go contains analysis import.
+// TestCmdMainGoImportsAppPackage verifies that cmd/main.go imports internal/app
+// which wires analysis and indexer (composition root pattern).
+// Expected result: cmd/main.go contains internal/app import.
 func TestCmdMainGoImportsAnalysis(t *testing.T) {
 	if !projectFileExists(t, "cmd/codectx/main.go") {
 		t.Fatal("cmd/main.go does not exist (required for pipeline wiring)")
 	}
 	content := readProjectFile(t, "cmd/codectx/main.go")
 
-	if !strings.Contains(content, "internal/analysis") {
-		t.Error("cmd/main.go should import internal/analysis for pipeline wiring")
+	if !strings.Contains(content, "internal/app") {
+		t.Error("cmd/main.go should import internal/app — analysis wiring is done in the app package")
 	}
 }
 

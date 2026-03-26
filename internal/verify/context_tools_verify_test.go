@@ -63,9 +63,9 @@ func TestSourceRemoval_GqlFindFunctions(t *testing.T) {
 	}
 }
 
-// TestSourceRemoval_HandlerMapping verifies handleFindFunction in tools.go
+// TestSourceRemoval_HandlerMapping verifies HandleFindFunction in tools.go
 // does NOT map Source field from response.
-// Expected: no "Source:" mapping line in handleFindFunction.
+// Expected: no "Source:" mapping line in HandleFindFunction.
 func TestSourceRemoval_HandlerMapping(t *testing.T) {
 	data, err := os.ReadFile("../../internal/mcp/tools.go")
 	if err != nil {
@@ -73,10 +73,10 @@ func TestSourceRemoval_HandlerMapping(t *testing.T) {
 	}
 	src := string(data)
 
-	// Find the handleFindFunction method
-	idx := strings.Index(src, "func (s *Server) handleFindFunction")
+	// Find the HandleFindFunction method (exported, on *Service receiver)
+	idx := strings.Index(src, "func (svc *Service) HandleFindFunction")
 	if idx == -1 {
-		t.Fatal("handleFindFunction not found in tools.go")
+		t.Fatal("HandleFindFunction not found in tools.go")
 	}
 	// Get the method body (approximate: next 50 lines / 2000 chars)
 	endIdx := idx + 2000
@@ -87,7 +87,7 @@ func TestSourceRemoval_HandlerMapping(t *testing.T) {
 
 	// The method should NOT contain Source: strVal(m, "source")
 	if strings.Contains(methodBody, `strVal(m, "source")`) {
-		t.Error("handleFindFunction should NOT map Source field from response")
+		t.Error("HandleFindFunction should NOT map Source field from response")
 	}
 }
 
@@ -121,14 +121,15 @@ func TestContextTools_Has7GqlConstants(t *testing.T) {
 	}
 }
 
-// TestContextTools_HasMarshalMCPResult verifies marshalMCPResult exists.
+// TestContextTools_HasMarshalMCPResult verifies marshalMCPResult exists in
+// internal/api/mcp/handlers.go (moved from context_tools.go after refactoring).
 func TestContextTools_HasMarshalMCPResult(t *testing.T) {
-	data, err := os.ReadFile("../../internal/mcp/context_tools.go")
+	data, err := os.ReadFile("../../internal/api/mcp/handlers.go")
 	if err != nil {
-		t.Fatalf("failed to read context_tools.go: %v", err)
+		t.Fatalf("failed to read handlers.go: %v", err)
 	}
 	if !strings.Contains(string(data), "marshalMCPResult") {
-		t.Error("context_tools.go should contain marshalMCPResult function")
+		t.Error("internal/api/mcp/handlers.go should contain marshalMCPResult function")
 	}
 }
 
@@ -145,23 +146,23 @@ func TestContextTools_HasTraversalToSummary(t *testing.T) {
 
 // --- Task 8: Register 4 new tools in server.go ---
 
-// TestServerRegistration_12Tools verifies server.go registers 12 tools
-// (mentions "12 tool" in comments/docs).
+// TestServerRegistration_12Tools verifies internal/api/mcp/server.go registers
+// 20 tools (mentions "20 tool" in comments/docs).
 func TestServerRegistration_12Tools(t *testing.T) {
-	data, err := os.ReadFile("../../internal/mcp/server.go")
+	data, err := os.ReadFile("../../internal/api/mcp/server.go")
 	if err != nil {
 		t.Fatalf("failed to read server.go: %v", err)
 	}
 	src := string(data)
 	if !strings.Contains(src, "20 tool") {
-		t.Error("server.go should mention '20 tool' in doc comment")
+		t.Error("internal/api/mcp/server.go should mention '20 tool' in doc comment")
 	}
 }
 
-// TestServerRegistration_ContextTools verifies server.go registers
+// TestServerRegistration_ContextTools verifies internal/api/mcp/server.go registers
 // get_repo_map, get_file_overview, get_symbol_context, read_source.
 func TestServerRegistration_ContextTools(t *testing.T) {
-	data, err := os.ReadFile("../../internal/mcp/server.go")
+	data, err := os.ReadFile("../../internal/api/mcp/server.go")
 	if err != nil {
 		t.Fatalf("failed to read server.go: %v", err)
 	}
@@ -171,17 +172,17 @@ func TestServerRegistration_ContextTools(t *testing.T) {
 	}
 	for _, tool := range tools {
 		if !strings.Contains(src, `"`+tool+`"`) {
-			t.Errorf("server.go should register tool %q", tool)
+			t.Errorf("internal/api/mcp/server.go should register tool %q", tool)
 		}
 	}
 }
 
-// TestServerRegistration_McpHandleAdapters verifies server.go has
-// mcpHandle* adapter methods for all 4 context tools.
+// TestServerRegistration_McpHandleAdapters verifies internal/api/mcp/handlers.go
+// has mcpHandle* adapter methods for all 4 context tools.
 func TestServerRegistration_McpHandleAdapters(t *testing.T) {
-	data, err := os.ReadFile("../../internal/mcp/server.go")
+	data, err := os.ReadFile("../../internal/api/mcp/handlers.go")
 	if err != nil {
-		t.Fatalf("failed to read server.go: %v", err)
+		t.Fatalf("failed to read handlers.go: %v", err)
 	}
 	src := string(data)
 	adapters := []string{
@@ -192,14 +193,15 @@ func TestServerRegistration_McpHandleAdapters(t *testing.T) {
 	}
 	for _, adapter := range adapters {
 		if !strings.Contains(src, adapter) {
-			t.Errorf("server.go should contain adapter method %q", adapter)
+			t.Errorf("internal/api/mcp/handlers.go should contain adapter method %q", adapter)
 		}
 	}
 }
 
 // --- Task 13: Full build/vet/race verification ---
 
-// TestContextTools_4HandlerMethods verifies context_tools.go has all 4 handler methods.
+// TestContextTools_4HandlerMethods verifies context_tools.go has all 4 handler methods
+// (exported as Handle* on *Service receiver after refactoring).
 func TestContextTools_4HandlerMethods(t *testing.T) {
 	data, err := os.ReadFile("../../internal/mcp/context_tools.go")
 	if err != nil {
@@ -207,10 +209,10 @@ func TestContextTools_4HandlerMethods(t *testing.T) {
 	}
 	src := string(data)
 	handlers := []string{
-		"handleGetRepoMap",
-		"handleGetFileOverview",
-		"handleGetSymbolContext",
-		"handleReadSource",
+		"HandleGetRepoMap",
+		"HandleGetFileOverview",
+		"HandleGetSymbolContext",
+		"HandleReadSource",
 	}
 	for _, h := range handlers {
 		if !strings.Contains(src, h) {

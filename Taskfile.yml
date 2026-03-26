@@ -3,6 +3,12 @@
 version: "3"
 
 tasks:
+  run:
+    desc: Run the project
+    cmds:
+      - go run ./cmd/codectx/main.go
+    silent: true
+
   env-up:
     desc: Update the environment variables
     cmds:

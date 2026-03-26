@@ -130,32 +130,32 @@ func TestManagement_FileExists(t *testing.T) {
 }
 
 // TestManagement_HasIngestHandler verifies that management_tools.go
-// contains handleIngestRepository handler method.
-// Expected result: management_tools.go contains handleIngestRepository.
+// contains HandleIngestRepository handler method (exported on *Service).
+// Expected result: management_tools.go contains HandleIngestRepository.
 func TestManagement_HasIngestHandler(t *testing.T) {
 	src := readProjectFile(t, "internal/mcp/management_tools.go")
-	if !strings.Contains(src, "func (s *Server) handleIngestRepository(") {
-		t.Error("management_tools.go should contain handleIngestRepository handler")
+	if !strings.Contains(src, "func (svc *Service) HandleIngestRepository(") {
+		t.Error("management_tools.go should contain HandleIngestRepository handler")
 	}
 }
 
 // TestManagement_HasDeleteHandler verifies that management_tools.go
-// contains handleDeleteRepository handler method.
-// Expected result: management_tools.go contains handleDeleteRepository.
+// contains HandleDeleteRepository handler method (exported on *Service).
+// Expected result: management_tools.go contains HandleDeleteRepository.
 func TestManagement_HasDeleteHandler(t *testing.T) {
 	src := readProjectFile(t, "internal/mcp/management_tools.go")
-	if !strings.Contains(src, "func (s *Server) handleDeleteRepository(") {
-		t.Error("management_tools.go should contain handleDeleteRepository handler")
+	if !strings.Contains(src, "func (svc *Service) HandleDeleteRepository(") {
+		t.Error("management_tools.go should contain HandleDeleteRepository handler")
 	}
 }
 
 // TestManagement_HasStatsHandler verifies that management_tools.go
-// contains handleGetRepositoryStats handler method.
-// Expected result: management_tools.go contains handleGetRepositoryStats.
+// contains HandleGetRepositoryStats handler method (exported on *Service).
+// Expected result: management_tools.go contains HandleGetRepositoryStats.
 func TestManagement_HasStatsHandler(t *testing.T) {
 	src := readProjectFile(t, "internal/mcp/management_tools.go")
-	if !strings.Contains(src, "func (s *Server) handleGetRepositoryStats(") {
-		t.Error("management_tools.go should contain handleGetRepositoryStats handler")
+	if !strings.Contains(src, "func (svc *Service) HandleGetRepositoryStats(") {
+		t.Error("management_tools.go should contain HandleGetRepositoryStats handler")
 	}
 }
 
@@ -297,13 +297,13 @@ func TestManagement_DeleteValidatesRepo(t *testing.T) {
 	}
 }
 
-// TestManagement_DeleteCallsCodeDB verifies that handleDeleteRepository
+// TestManagement_DeleteCallsCodeDB verifies that HandleDeleteRepository
 // calls db.DeleteRepo to perform the cascade delete.
-// Expected result: handler calls s.db.DeleteRepo.
+// Expected result: handler calls svc.db.DeleteRepo.
 func TestManagement_DeleteCallsCodeDB(t *testing.T) {
 	src := readProjectFile(t, "internal/mcp/management_tools.go")
-	if !strings.Contains(src, "s.db.DeleteRepo") {
-		t.Error("handleDeleteRepository should call s.db.DeleteRepo")
+	if !strings.Contains(src, "svc.db.DeleteRepo") {
+		t.Error("HandleDeleteRepository should call svc.db.DeleteRepo")
 	}
 }
 
@@ -340,42 +340,43 @@ func TestManagement_StatsCountsAll5NodeTypes(t *testing.T) {
 // Task 3: Verify server.go tool registration
 // ============================================================================
 
-// TestServer_Registers15Tools verifies that server.go registers the expected
-// number of tools in NewServer: 4 search + 5 traversal + 1 call chain + 4 context + 3 management + 3 analysis = 20.
+// TestServer_Registers15Tools verifies that internal/api/mcp/server.go registers
+// the expected number of tools in NewServer: 4 search + 5 traversal + 1 call chain +
+// 4 context + 3 management + 3 analysis = 20.
 // Expected result: server.go calls mcpServer.AddTool 20 times.
 func TestServer_Registers15Tools(t *testing.T) {
-	src := readProjectFile(t, "internal/mcp/server.go")
+	src := readProjectFile(t, "internal/api/mcp/server.go")
 	count := strings.Count(src, "mcpServer.AddTool(")
 	if count != 20 {
 		t.Errorf("NewServer should register 20 tools, found %d AddTool calls", count)
 	}
 }
 
-// TestServer_NewServerAcceptsIndexer verifies that NewServer accepts an
-// *indexer.Indexer parameter for the ingest_repository tool.
-// Expected result: NewServer signature includes idx *indexer.Indexer.
+// TestServer_NewServerAcceptsService verifies that NewServer accepts a
+// *codectx.Service parameter (composition root pattern).
+// Expected result: internal/api/mcp/server.go NewServer signature includes *Service.
 func TestServer_NewServerAcceptsIndexer(t *testing.T) {
-	src := readProjectFile(t, "internal/mcp/server.go")
-	if !strings.Contains(src, "idx *indexer.Indexer") {
-		t.Error("NewServer should accept *indexer.Indexer parameter")
+	src := readProjectFile(t, "internal/api/mcp/server.go")
+	if !strings.Contains(src, "codectx.Service") {
+		t.Error("NewServer should accept *codectx.Service parameter")
 	}
 }
 
-// TestServer_NewServerAcceptsAnalyzer verifies that NewServer accepts an
-// *analysis.Analyzer parameter for the ingest_repository tool.
-// Expected result: NewServer signature includes analyzer *analysis.Analyzer.
+// TestServer_NewServerAcceptsService verifies that NewServer in internal/api/mcp
+// takes a *Service (not separate idx/analyzer params).
+// Expected result: internal/api/mcp/server.go has svc *codectx.Service.
 func TestServer_NewServerAcceptsAnalyzer(t *testing.T) {
-	src := readProjectFile(t, "internal/mcp/server.go")
-	if !strings.Contains(src, "analyzer *analysis.Analyzer") {
-		t.Error("NewServer should accept *analysis.Analyzer parameter")
+	src := readProjectFile(t, "internal/api/mcp/server.go")
+	if !strings.Contains(src, "svc *codectx.Service") {
+		t.Error("NewServer should accept svc *codectx.Service parameter")
 	}
 }
 
-// TestServer_HasManagementMCPAdapters verifies that server.go has
-// mcpHandle* adapter methods for all 3 management tools.
-// Expected result: server.go contains all 3 mcpHandle* methods.
+// TestServer_HasManagementMCPAdapters verifies that internal/api/mcp/handlers.go
+// has mcpHandle* adapter methods for all 3 management tools.
+// Expected result: handlers.go contains all 3 mcpHandle* methods.
 func TestServer_HasManagementMCPAdapters(t *testing.T) {
-	src := readProjectFile(t, "internal/mcp/server.go")
+	src := readProjectFile(t, "internal/api/mcp/handlers.go")
 	adapters := []string{
 		"mcpHandleIngestRepository",
 		"mcpHandleDeleteRepository",
@@ -383,16 +384,16 @@ func TestServer_HasManagementMCPAdapters(t *testing.T) {
 	}
 	for _, a := range adapters {
 		if !strings.Contains(src, a) {
-			t.Errorf("server.go should contain %s adapter", a)
+			t.Errorf("internal/api/mcp/handlers.go should contain %s adapter", a)
 		}
 	}
 }
 
 // TestServer_RegistersIngestTool verifies that NewServer registers the
 // ingest_repository tool with the correct name and required parameter.
-// Expected result: server.go registers "ingest_repository" with "repository_path" param.
+// Expected result: internal/api/mcp/server.go registers "ingest_repository" with "repository_path" param.
 func TestServer_RegistersIngestTool(t *testing.T) {
-	src := readProjectFile(t, "internal/mcp/server.go")
+	src := readProjectFile(t, "internal/api/mcp/server.go")
 	if !strings.Contains(src, `"ingest_repository"`) {
 		t.Error("NewServer should register 'ingest_repository' tool")
 	}
@@ -403,9 +404,9 @@ func TestServer_RegistersIngestTool(t *testing.T) {
 
 // TestServer_RegistersDeleteTool verifies that NewServer registers the
 // delete_repository tool with the correct name and required parameter.
-// Expected result: server.go registers "delete_repository".
+// Expected result: internal/api/mcp/server.go registers "delete_repository".
 func TestServer_RegistersDeleteTool(t *testing.T) {
-	src := readProjectFile(t, "internal/mcp/server.go")
+	src := readProjectFile(t, "internal/api/mcp/server.go")
 	if !strings.Contains(src, `"delete_repository"`) {
 		t.Error("NewServer should register 'delete_repository' tool")
 	}
@@ -413,39 +414,39 @@ func TestServer_RegistersDeleteTool(t *testing.T) {
 
 // TestServer_RegistersStatsTool verifies that NewServer registers the
 // get_repository_stats tool with the correct name.
-// Expected result: server.go registers "get_repository_stats".
+// Expected result: internal/api/mcp/server.go registers "get_repository_stats".
 func TestServer_RegistersStatsTool(t *testing.T) {
-	src := readProjectFile(t, "internal/mcp/server.go")
+	src := readProjectFile(t, "internal/api/mcp/server.go")
 	if !strings.Contains(src, `"get_repository_stats"`) {
 		t.Error("NewServer should register 'get_repository_stats' tool")
 	}
 }
 
-// TestServer_ServerStructHasIdxField verifies that the Server struct
-// has an idx field for the Indexer.
-// Expected result: server.go has idx field in Server struct.
+// TestServer_ServerStructHasIdxField verifies that the Service struct
+// in internal/mcp/service.go has an idx field for the Indexer.
+// Expected result: service.go has idx field referencing *indexer.Indexer.
 func TestServer_ServerStructHasIdxField(t *testing.T) {
-	src := readProjectFile(t, "internal/mcp/server.go")
+	src := readProjectFile(t, "internal/mcp/service.go")
 	if !strings.Contains(src, "idx") || !strings.Contains(src, "*indexer.Indexer") {
-		t.Error("Server struct should have idx *indexer.Indexer field")
+		t.Error("Service struct should have idx *indexer.Indexer field")
 	}
 }
 
-// TestServer_ServerStructHasAnalyzerField verifies that the Server struct
-// has an analyzer field for the Analyzer.
-// Expected result: server.go has analyzer field in Server struct.
+// TestServer_ServerStructHasAnalyzerField verifies that the Service struct
+// in internal/mcp/service.go has an analyzer field for the Analyzer.
+// Expected result: service.go has analyzer field referencing *analysis.Analyzer.
 func TestServer_ServerStructHasAnalyzerField(t *testing.T) {
-	src := readProjectFile(t, "internal/mcp/server.go")
+	src := readProjectFile(t, "internal/mcp/service.go")
 	if !strings.Contains(src, "analyzer") || !strings.Contains(src, "*analysis.Analyzer") {
-		t.Error("Server struct should have analyzer *analysis.Analyzer field")
+		t.Error("Service struct should have analyzer *analysis.Analyzer field")
 	}
 }
 
 // TestServer_DocComment15Tools verifies that NewServer doc comment
-// mentions "20 tool handlers".
+// in internal/api/mcp/server.go mentions "20 tool handlers".
 // Expected result: server.go doc comment says "20".
 func TestServer_DocComment15Tools(t *testing.T) {
-	src := readProjectFile(t, "internal/mcp/server.go")
+	src := readProjectFile(t, "internal/api/mcp/server.go")
 	if !strings.Contains(src, "20 tool") {
 		t.Error("NewServer doc comment should mention '20 tool handlers'")
 	}
@@ -533,42 +534,44 @@ func TestREPL_HandleDeleteValidatesDB(t *testing.T) {
 // ============================================================================
 
 // TestHelpers_NewTestServerWithIndexerExists verifies that
-// newTestServerWithIndexer helper exists in test_helpers_test.go.
-// Expected result: test_helpers_test.go contains newTestServerWithIndexer.
+// newTestServiceWithIndexer helper exists in test_helpers_test.go
+// (renamed from newTestServerWithIndexer after Service refactoring).
+// Expected result: test_helpers_test.go contains newTestServiceWithIndexer.
 func TestHelpers_NewTestServerWithIndexerExists(t *testing.T) {
 	src := readProjectFile(t, "internal/mcp/test_helpers_test.go")
-	if !strings.Contains(src, "func newTestServerWithIndexer(") {
-		t.Error("test_helpers_test.go should contain newTestServerWithIndexer helper")
+	if !strings.Contains(src, "func newTestServiceWithIndexer(") {
+		t.Error("test_helpers_test.go should contain newTestServiceWithIndexer helper")
 	}
 }
 
 // TestHelpers_NewTestServerWithResponsesExists verifies that
-// newTestServerWithResponses helper exists in test_helpers_test.go.
-// Expected result: test_helpers_test.go contains newTestServerWithResponses.
+// newTestServiceWithResponses helper exists in test_helpers_test.go
+// (renamed from newTestServerWithResponses after Service refactoring).
+// Expected result: test_helpers_test.go contains newTestServiceWithResponses.
 func TestHelpers_NewTestServerWithResponsesExists(t *testing.T) {
 	src := readProjectFile(t, "internal/mcp/test_helpers_test.go")
-	if !strings.Contains(src, "func newTestServerWithResponses(") {
-		t.Error("test_helpers_test.go should contain newTestServerWithResponses helper")
+	if !strings.Contains(src, "func newTestServiceWithResponses(") {
+		t.Error("test_helpers_test.go should contain newTestServiceWithResponses helper")
 	}
 }
 
 // TestHelpers_WithIndexerCreatesIndexer verifies that
-// newTestServerWithIndexer creates an actual indexer.Indexer instance.
+// newTestServiceWithIndexer creates an actual indexer.Indexer instance.
 // Expected result: helper calls indexer.NewIndexer.
 func TestHelpers_WithIndexerCreatesIndexer(t *testing.T) {
 	src := readProjectFile(t, "internal/mcp/test_helpers_test.go")
 	if !strings.Contains(src, "indexer.NewIndexer") {
-		t.Error("newTestServerWithIndexer should create indexer via indexer.NewIndexer")
+		t.Error("newTestServiceWithIndexer should create indexer via indexer.NewIndexer")
 	}
 }
 
 // TestHelpers_WithIndexerSetsIdxField verifies that
-// newTestServerWithIndexer sets the idx field on the Server.
-// Expected result: helper sets s.idx or Server{..., idx: ...}.
+// newTestServiceWithIndexer sets the idx field on the Service.
+// Expected result: helper sets idx: or idx =.
 func TestHelpers_WithIndexerSetsIdxField(t *testing.T) {
 	src := readProjectFile(t, "internal/mcp/test_helpers_test.go")
 	if !strings.Contains(src, "idx:") && !strings.Contains(src, "idx =") {
-		t.Error("newTestServerWithIndexer should set the idx field")
+		t.Error("newTestServiceWithIndexer should set the idx field")
 	}
 }
 
@@ -578,13 +581,13 @@ func TestHelpers_WithIndexerSetsIdxField(t *testing.T) {
 
 // TestDocComment_ManagementToolsHasComments verifies that
 // management_tools.go has doc comments on all handler methods.
-// Expected result: all 3 handlers have "// handle" doc comments.
+// Expected result: all 3 handlers have "// Handle" doc comments.
 func TestDocComment_ManagementToolsHasComments(t *testing.T) {
 	src := readProjectFile(t, "internal/mcp/management_tools.go")
 	comments := []string{
-		"// handleIngestRepository",
-		"// handleDeleteRepository",
-		"// handleGetRepositoryStats",
+		"// HandleIngestRepository",
+		"// HandleDeleteRepository",
+		"// HandleGetRepositoryStats",
 	}
 	for _, c := range comments {
 		if !strings.Contains(src, c) {
@@ -641,22 +644,22 @@ func TestBuild_ManagementImportsAnalysis(t *testing.T) {
 	}
 }
 
-// TestBuild_ServerImportsIndexer verifies that server.go imports
-// the indexer package for the NewServer parameter.
-// Expected result: server.go imports internal/indexer.
+// TestBuild_ServerImportsIndexer verifies that internal/mcp/service.go imports
+// the indexer package (dependencies now held in Service, not api/mcp/server.go).
+// Expected result: service.go imports internal/indexer.
 func TestBuild_ServerImportsIndexer(t *testing.T) {
-	src := readProjectFile(t, "internal/mcp/server.go")
+	src := readProjectFile(t, "internal/mcp/service.go")
 	if !strings.Contains(src, `"github.com/tab58/code-context/internal/indexer"`) {
-		t.Error("server.go should import internal/indexer")
+		t.Error("internal/mcp/service.go should import internal/indexer")
 	}
 }
 
-// TestBuild_ServerImportsAnalysis verifies that server.go imports
-// the analysis package for the NewServer parameter.
-// Expected result: server.go imports internal/analysis.
+// TestBuild_ServerImportsAnalysis verifies that internal/mcp/service.go imports
+// the analysis package (dependencies now held in Service, not api/mcp/server.go).
+// Expected result: service.go imports internal/analysis.
 func TestBuild_ServerImportsAnalysis(t *testing.T) {
-	src := readProjectFile(t, "internal/mcp/server.go")
+	src := readProjectFile(t, "internal/mcp/service.go")
 	if !strings.Contains(src, `"github.com/tab58/code-context/internal/analysis"`) {
-		t.Error("server.go should import internal/analysis")
+		t.Error("internal/mcp/service.go should import internal/analysis")
 	}
 }

@@ -116,16 +116,17 @@ func TestTraversalFile_Has4ParseFunctions(t *testing.T) {
 	}
 }
 
-// TestContextTools_HasMarshalMCPResult verifies that context_tools.go
-// defines the unified marshalMCPResult converter.
+// TestTraversalFile_MarshalMCPResultUnified verifies that
+// internal/api/mcp/handlers.go defines the unified marshalMCPResult converter
+// (moved from context_tools.go after refactoring).
 // Expected result: "marshalMCPResult" found in source.
 func TestTraversalFile_MarshalMCPResultUnified(t *testing.T) {
-	data, err := os.ReadFile("../../internal/mcp/context_tools.go")
+	data, err := os.ReadFile("../../internal/api/mcp/handlers.go")
 	if err != nil {
-		t.Fatalf("failed to read context_tools.go: %v", err)
+		t.Fatalf("failed to read handlers.go: %v", err)
 	}
 	if !strings.Contains(string(data), "func marshalMCPResult") {
-		t.Error("context_tools.go should contain marshalMCPResult function")
+		t.Error("internal/api/mcp/handlers.go should contain marshalMCPResult function")
 	}
 }
 
@@ -160,11 +161,11 @@ func TestTypesFile_HasMaxTraversalDepth(t *testing.T) {
 	}
 }
 
-// TestServerFile_Has8Tools verifies that server.go registers 8 tools
-// (3 search + 5 traversal) via AddTool calls.
-// Expected result: 8 AddTool calls in server.go.
+// TestServerFile_Has12Tools verifies that internal/api/mcp/server.go registers
+// 20 tools via AddTool calls.
+// Expected result: 20 AddTool calls in server.go.
 func TestServerFile_Has12Tools(t *testing.T) {
-	data, err := os.ReadFile("../../internal/mcp/server.go")
+	data, err := os.ReadFile("../../internal/api/mcp/server.go")
 	if err != nil {
 		t.Fatalf("failed to read server.go: %v", err)
 	}
@@ -172,15 +173,15 @@ func TestServerFile_Has12Tools(t *testing.T) {
 
 	count := strings.Count(src, "mcpServer.AddTool(")
 	if count != 20 {
-		t.Errorf("server.go should have 20 AddTool calls, got %d", count)
+		t.Errorf("internal/api/mcp/server.go should have 20 AddTool calls, got %d", count)
 	}
 }
 
-// TestServerFile_HasTraversalToolNames verifies that server.go registers
-// all 5 traversal tool names.
+// TestServerFile_HasTraversalToolNames verifies that internal/api/mcp/server.go
+// registers all 5 traversal tool names.
 // Expected result: all 5 tool names found in AddTool calls.
 func TestServerFile_HasTraversalToolNames(t *testing.T) {
-	data, err := os.ReadFile("../../internal/mcp/server.go")
+	data, err := os.ReadFile("../../internal/api/mcp/server.go")
 	if err != nil {
 		t.Fatalf("failed to read server.go: %v", err)
 	}
@@ -196,26 +197,26 @@ func TestServerFile_HasTraversalToolNames(t *testing.T) {
 
 	for _, tool := range tools {
 		if !strings.Contains(src, tool) {
-			t.Errorf("server.go should register tool %s", tool)
+			t.Errorf("internal/api/mcp/server.go should register tool %s", tool)
 		}
 	}
 }
 
 // TestServerFile_DocComment12Tools verifies that NewServer doc comment
-// mentions "12 tool handlers".
-// Expected result: "12 tool" found in server.go.
+// in internal/api/mcp/server.go mentions "20 tool handlers".
+// Expected result: "20 tool" found in server.go.
 func TestServerFile_DocComment12Tools(t *testing.T) {
-	data, err := os.ReadFile("../../internal/mcp/server.go")
+	data, err := os.ReadFile("../../internal/api/mcp/server.go")
 	if err != nil {
 		t.Fatalf("failed to read server.go: %v", err)
 	}
 	if !strings.Contains(string(data), "20 tool") {
-		t.Error("server.go NewServer doc comment should mention '20 tool handlers'")
+		t.Error("internal/api/mcp/server.go NewServer doc comment should mention '20 tool handlers'")
 	}
 }
 
 // TestTraversalFile_Has5Handlers verifies that traversal.go defines
-// all 5 handler methods.
+// all 5 handler methods (exported as Handle* on *Service receiver).
 // Expected result: all 5 handler function signatures found.
 func TestTraversalFile_Has5Handlers(t *testing.T) {
 	data, err := os.ReadFile("../../internal/mcp/traversal.go")
@@ -225,11 +226,11 @@ func TestTraversalFile_Has5Handlers(t *testing.T) {
 	src := string(data)
 
 	handlers := []string{
-		"handleGetCallers",
-		"handleGetCallees",
-		"handleGetClassHierarchy",
-		"handleGetDependencies",
-		"handleGetReferences",
+		"HandleGetCallers",
+		"HandleGetCallees",
+		"HandleGetClassHierarchy",
+		"HandleGetDependencies",
+		"HandleGetReferences",
 	}
 
 	for _, h := range handlers {
