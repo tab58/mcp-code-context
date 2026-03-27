@@ -11,9 +11,20 @@ func RegisterRoutes(api huma.API, r resolver.Resolver) {
 	route.Register(route.RegisterArgs[models.HealthcheckRequest, models.HealthcheckResponse]{
 		API: api,
 		Operation: huma.Operation{
-			Method: "GET",
-			Path:   "/health",
+			Method:      "GET",
+			Path:        "/health",
+			Description: "Check the health of the server",
 		},
 		Handler: route.HandleHealthcheck(r),
+	})
+
+	route.Register(route.RegisterArgs[models.QueryRequest, models.QueryResponse]{
+		API: api,
+		Operation: huma.Operation{
+			Method:      "POST",
+			Path:        "/query",
+			Description: "Query the knowledge graph",
+		},
+		Handler: route.HandleQuery(r),
 	})
 }

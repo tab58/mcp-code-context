@@ -11,8 +11,9 @@ import (
 // Default configuration values.
 const (
 	DefaultFalkorDBPort  = "6379"
+	DefaultMCPPort       = "8082"
+	DefaultServerPort    = "8080"
 	DefaultFalkorDBGraph = "codecontext"
-	DefaultMCPPort       = "8080"
 )
 
 type Config struct {
@@ -21,6 +22,9 @@ type Config struct {
 	FalkorDBPassword string `env:"FALKORDB_PASSWORD"`
 	FalkorDBGraph    string `env:"FALKORDB_GRAPH"`
 	MCPPort          string `env:"MCP_PORT"`
+	AnthropicAPIKey  string `env:"ANTHROPIC_API_KEY"`
+	ServerPort       string `env:"SERVER_PORT"`
+	RLMTraceLog      string `env:"RLM_TRACE_LOG"` // Optional file path for RLM engine trace logging.
 }
 
 func Load() (*Config, error) {
@@ -47,6 +51,9 @@ func Load() (*Config, error) {
 		FalkorDBPassword: password,
 		FalkorDBGraph:    envOrDefault("FALKORDB_GRAPH", DefaultFalkorDBGraph),
 		MCPPort:          envOrDefault("MCP_PORT", DefaultMCPPort),
+		AnthropicAPIKey:  os.Getenv("ANTHROPIC_API_KEY"),
+		ServerPort:       envOrDefault("SERVER_PORT", DefaultServerPort),
+		RLMTraceLog:      os.Getenv("RLM_TRACE_LOG"),
 	}, nil
 }
 

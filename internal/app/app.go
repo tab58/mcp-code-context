@@ -7,11 +7,13 @@ import (
 	"github.com/tab58/code-context/internal/analysis"
 	codedb "github.com/tab58/code-context/internal/clients/code_db"
 	"github.com/tab58/code-context/internal/indexer"
+	"github.com/tab58/code-context/internal/rlm"
 	tools "github.com/tab58/code-context/internal/tools"
 )
 
 type Application interface {
 	GetAppVersion() string
+	Query(ctx context.Context, query string) (string, error)
 	Ingest(ctx context.Context, path string) (*IngestResult, error)
 	ListRepositories(ctx context.Context) ([]string, error)
 
@@ -37,28 +39,31 @@ type Application interface {
 }
 
 type application struct {
-	appVersion string
-	db         *codedb.CodeDB
-	indexer    *indexer.Indexer
-	analyzer   *analysis.Analyzer
-	mcpTools   *tools.Manager
+	appVersion  string
+	db          *codedb.CodeDB
+	indexer     *indexer.Indexer
+	analyzer    *analysis.Analyzer
+	mcpTools    *tools.Manager
+	queryEngine *rlm.Engine
 }
 
 type ApplicationConfig struct {
-	AppVersion string
-	DB         *codedb.CodeDB
-	Indexer    *indexer.Indexer
-	Analyzer   *analysis.Analyzer
+	AppVersion  string
+	DB          *codedb.CodeDB
+	Indexer     *indexer.Indexer
+	Analyzer    *analysis.Analyzer
+	QueryEngine *rlm.Engine
 }
 
 func NewApplication(config *ApplicationConfig) Application {
 	toolManager := tools.NewManager(config.DB, config.Analyzer)
 	return &application{
-		appVersion: config.AppVersion,
-		db:         config.DB,
-		indexer:    config.Indexer,
-		analyzer:   config.Analyzer,
-		mcpTools:   toolManager,
+		appVersion:  config.AppVersion,
+		db:          config.DB,
+		indexer:     config.Indexer,
+		analyzer:    config.Analyzer,
+		mcpTools:    toolManager,
+		queryEngine: config.QueryEngine,
 	}
 }
 
@@ -73,6 +78,14 @@ type IngestResult struct {
 
 func (a *application) GetAppVersion() string {
 	return a.appVersion
+}
+
+// Query runs an RLM inference loop against the knowledge graph.
+func (a *application) Query(ctx context.Context, query string) (string, error) {
+	if a.queryEngine == nil {
+		return "", fmt.Errorf("query engine not configured")
+	}
+	return a.queryEngine.Run(ctx, query)
 }
 
 // Ingest runs the full pipeline (index -> analyze -> complexity) on a local directory.

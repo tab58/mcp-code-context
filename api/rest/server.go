@@ -35,16 +35,8 @@ func (s *Server) API() huma.API {
 }
 
 func NewServer(resolver resolver.Resolver) *Server {
-	config := huma.Config{
-		OpenAPI: &huma.OpenAPI{
-			OpenAPI: "3.1.0",
-			Info: &huma.Info{
-				Title:       "code-context",
-				Version:     resolver.GetAppVersion(),
-				Description: "code-context",
-			},
-		},
-	}
+	config := huma.DefaultConfig("code-context", resolver.GetAppVersion())
+	config.OpenAPI.Info.Description = "code-context"
 
 	r := router.New(config, resolver)
 
